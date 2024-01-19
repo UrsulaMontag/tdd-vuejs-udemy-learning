@@ -1,105 +1,169 @@
-import { render, screen, waitFor } from '@testing-library/vue'
-import userEvent from '@testing-library/user-event'
-import SignUp from '@/views/sign-up/SignUp.vue'
-import { setupServer } from 'msw/node'
-import { HttpResponse, http, type DefaultBodyType } from 'msw'
+import { render, screen, waitFor } from '@testing-library/vue';
+import userEvent from '@testing-library/user-event';
+import SignUp from '@/views/sign-up/SignUp.vue';
+import { setupServer } from 'msw/node';
+import { HttpResponse, http, type DefaultBodyType, delay } from 'msw';
+import { afterAll } from 'vitest';
 
-describe('Sign Up', () => {
-  it('has a sign up header', () => {
-    render(SignUp)
-    const header = screen.getByRole('heading', { name: /sign up/i })
-    expect(header).toBeInTheDocument()
-  })
+let requestBody: DefaultBodyType;
+let counter = 0;
+const server = setupServer(
+  http.post( '/api/v1/users', async ( { request } ) => {
+    requestBody = await request.json();
+    counter += 1;
+    return HttpResponse.json( { message: 'User created successfully' } );
+  } )
+);
 
-  it('has username input', () => {
-    render(SignUp)
-    expect(screen.getByLabelText('Username')).toBeInTheDocument()
-  })
+const setup = async () => {
+  const user = userEvent.setup();
 
-  it('has email input', () => {
-    render(SignUp)
-    expect(screen.getByLabelText('Email')).toBeInTheDocument()
-  })
+  const result = render( SignUp );
+  const usernameInput = screen.getByLabelText( 'Username' );
+  const emailInput = screen.getByLabelText( 'Email' );
+  const passwordInput = screen.getByLabelText( 'Password' );
+  const passwordRepeatInput = screen.getByLabelText( 'Password Repeat' );
+  await user.type( usernameInput, 'user1' );
+  await user.type( emailInput, 'user123@mail.com' );
+  await user.type( passwordInput, 'Password1' );
+  await user.type( passwordRepeatInput, 'Password1' );
+  const button = screen.getByRole( 'button', { name: /sign up/i } );
+  return {
+    ...result,
+    user,
+    elements: { button }
+  };
+};
 
-  it('has email type for email input', () => {
-    render(SignUp)
-    expect(screen.getByLabelText('Email')).toHaveAttribute('type', 'email')
-  })
+beforeAll( () => server.listen() );
+afterAll( () => server.close() );
+beforeEach( () => {
+  counter = 0;
+  server.resetHandlers();
+} );
 
-  it('has password input', () => {
-    render(SignUp)
-    expect(screen.getByLabelText('Password')).toBeInTheDocument()
-  })
+describe( 'Sign Up', () => {
+  it( 'has a sign up header', () => {
+    render( SignUp );
+    const header = screen.getByRole( 'heading', { name: /sign up/i } );
+    expect( header ).toBeInTheDocument();
+  } );
 
-  it('has password type for password input', () => {
-    render(SignUp)
-    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'password')
-  })
+  it( 'has username input', () => {
+    render( SignUp );
+    expect( screen.getByLabelText( 'Username' ) ).toBeInTheDocument();
+  } );
 
-  it('has password repeat input', () => {
-    render(SignUp)
-    expect(screen.getByLabelText('Password Repeat')).toBeInTheDocument()
-  })
+  it( 'has email input', () => {
+    render( SignUp );
+    expect( screen.getByLabelText( 'Email' ) ).toBeInTheDocument();
+  } );
 
-  it('has password type for password input', () => {
-    render(SignUp)
-    expect(screen.getByLabelText('Password Repeat')).toHaveAttribute('type', 'password')
-  })
+  it( 'has email type for email input', () => {
+    render( SignUp );
+    expect( screen.getByLabelText( 'Email' ) ).toHaveAttribute( 'type', 'email' );
+  } );
 
-  it('has a sign up button', () => {
-    render(SignUp)
-    const button = screen.getByRole('button', { name: /sign up/i })
-    expect(button).toBeInTheDocument()
-  })
+  it( 'has password input', () => {
+    render( SignUp );
+    expect( screen.getByLabelText( 'Password' ) ).toBeInTheDocument();
+  } );
 
-  it('disables sign up button initially', () => {
-    render(SignUp)
-    expect(screen.getByRole('button', { name: /sign up/i })).toBeDisabled()
-  })
+  it( 'has password type for password input', () => {
+    render( SignUp );
+    expect( screen.getByLabelText( 'Password' ) ).toHaveAttribute( 'type', 'password' );
+  } );
 
-  describe('when user sets same value for password inputs', () => {
-    it('enables sign-up button', async () => {
-      const user = userEvent.setup()
-      render(SignUp)
-      const passwordInput = screen.getByLabelText('Password')
-      const passwordRepeatInput = screen.getByLabelText('Password Repeat')
-      await user.type(passwordInput, 'Password')
-      await user.type(passwordRepeatInput, 'Password')
-      expect(screen.getByRole('button', { name: /sign up/i })).toBeEnabled()
-    })
-    describe('when user submits form', () => {
-      it('sends username, email, password to backend', async () => {
-        let requestBody: DefaultBodyType
-        const server = setupServer(
-          http.post('/api/v1/users', async ({ request }) => {
-            requestBody = await request.json()
-            return HttpResponse.json({})
-          })
-        )
-        server.listen()
-        const user = userEvent.setup()
+  it( 'has password repeat input', () => {
+    render( SignUp );
+    expect( screen.getByLabelText( 'Password Repeat' ) ).toBeInTheDocument();
+  } );
 
-        render(SignUp)
-        const usernameInput = screen.getByLabelText('Username')
-        const emailInput = screen.getByLabelText('Email')
-        const passwordInput = screen.getByLabelText('Password')
-        const passwordRepeatInput = screen.getByLabelText('Password Repeat')
-        await user.type(usernameInput, 'user1')
-        await user.type(emailInput, 'user1@mail.com')
-        await user.type(passwordInput, 'Password')
-        await user.type(passwordRepeatInput, 'Password')
-        const button = screen.getByRole('button', { name: /sign up/i })
-        await user.click(button)
+  it( 'has password type for password input', () => {
+    render( SignUp );
+    expect( screen.getByLabelText( 'Password Repeat' ) ).toHaveAttribute( 'type', 'password' );
+  } );
 
-        await waitFor(() =>
-          expect(requestBody).toEqual({
+  it( 'has a sign up button', () => {
+    render( SignUp );
+    const button = screen.getByRole( 'button', { name: /sign up/i } );
+    expect( button ).toBeInTheDocument();
+  } );
+
+  it( 'disables sign up button initially', () => {
+    render( SignUp );
+    expect( screen.getByRole( 'button', { name: /sign up/i } ) ).toBeDisabled();
+  } );
+  it( 'does not display spinner', () => {
+    render( SignUp );
+    expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
+  } );
+
+  describe( 'when user sets same value for password inputs', () => {
+    it( 'enables sign-up button', async () => {
+      const {
+        elements: { button }
+      } = await setup();
+      expect( button ).toBeEnabled();
+    } );
+    describe( 'when user submits form', () => {
+      it( 'sends username, email, password to backend', async () => {
+        const {
+          user,
+          elements: { button }
+        } = await setup();
+        await user.click( button );
+        await waitFor( () =>
+          expect( requestBody ).toEqual( {
             username: 'user1',
-            email: 'user1@mail.com',
-            password: 'Password'
-          })
-        )
-        server.close()
-      })
-    })
-  })
-})
+            email: 'user123@mail.com',
+            password: 'Password1'
+          } )
+        );
+      } );
+      describe( 'when there is an ongoing api call', () => {
+        it( 'does not allow clicking the button', async () => {
+          const {
+            user,
+            elements: { button }
+          } = await setup();
+          await user.click( button );
+          await user.click( button );
+          await waitFor( () => expect( counter ).toBe( 1 ) );
+        } );
+        it( 'displays spinner', async () => {
+          server.use(
+            http.post( '/api/v1/users', async () => {
+              await delay( 'infinite' );
+              return HttpResponse.json( {} );
+            } )
+          );
+          const { user, elements: { button } } = await setup();
+          await user.click( button );
+          expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
+        } );
+      } );
+      describe( 'when success response is received', () => {
+        it( 'displays success message received from backend', async () => {
+          const {
+            user,
+            elements: { button }
+          } = await setup();
+          await user.click( button );
+          const text = await screen.findByText( 'User created successfully' );
+          expect( text ).toBeInTheDocument();
+        } );
+      } );
+      it( 'hides sign up form', async () => {
+        const {
+          user,
+          elements: { button }
+        } = await setup();
+        const form = screen.getByTestId( 'form-sign-up' );
+        await user.click( button );
+        await waitFor( () => expect( form ).not.toBeInTheDocument() );
+
+      } );
+    } );
+  } );
+} );

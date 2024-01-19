@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import SignUp from '@/views/sign-up/SignUp.vue'
 </script>
 
 <template>
   <main class="container">
-    <SignUp />
+    <router-view />
   </main>
 </template>
 

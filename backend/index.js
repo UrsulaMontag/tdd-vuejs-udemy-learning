@@ -1,4 +1,5 @@
-const app = require('./src/app');
-const logger = require('./src/shared/logger');
+/* eslint-disable no-undef */
+const app = require('./src/app')
+const logger = require('./src/shared/logger')
 
-app.listen(8080, () => logger.info('app is running. port: 8080'));
+app.listen(8080, () => logger.info('app is running. port: 8080'))

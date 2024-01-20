@@ -153,17 +153,77 @@ describe( 'Sign Up', () => {
           const text = await screen.findByText( 'User created successfully' );
           expect( text ).toBeInTheDocument();
         } );
+        it( 'hides sign up form', async () => {
+          const {
+            user,
+            elements: { button }
+          } = await setup();
+          const form = screen.getByTestId( 'form-sign-up' );
+          await user.click( button );
+          await waitFor( () => expect( form ).not.toBeInTheDocument() );
+        } );
       } );
-      it( 'hides sign up form', async () => {
-        const {
-          user,
-          elements: { button }
-        } = await setup();
-        const form = screen.getByTestId( 'form-sign-up' );
-        await user.click( button );
-        await waitFor( () => expect( form ).not.toBeInTheDocument() );
+      describe( 'when network failure occurs', () => {
+        it( 'displays generic message', async () => {
+          server.use(
+            http.post( 'api/v1/users', () => {
+              return HttpResponse.error();
+            } )
+          );
+          const { user, elements: { button } } = await setup();
+          await user.click( button );
+          const text = await screen.findByText( 'Unexpected error occured. Please try again.' );
+          expect( text ).toBeInTheDocument();
+        } );
+        it( 'hides spinner', async () => {
+          server.use(
+            http.post( 'api/v1/users', () => {
+              return HttpResponse.error();
+            } )
+          );
+          const { user, elements: { button } } = await setup();
+          await user.click( button );
+          await waitFor( () => expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument() );
+        } );
 
+        describe( 'when user submits form again', () => {
+          it( 'hides error message when api request is in progress', async () => {
+            let processedFirstRequest = false;
+            server.use(
+              http.post( 'api/v1/users', async () => {
+                if ( !processedFirstRequest ) {
+                  processedFirstRequest = true;
+                  return HttpResponse.error();
+                }
+                return HttpResponse.json( {} );
+              } )
+            );
+            const { user, elements: { button } } = await setup();
+            await user.click( button );
+            const text = await screen.findByText( 'Unexpected error occured. Please try again.' );
+            await user.click( button );
+            await waitFor( () => expect( text ).not.toBeInTheDocument() );
+          } );
+        } );
       } );
+      describe( 'when username is invalid', () => {
+        it( 'displays validation error', async () => {
+          server.use(
+            http.post( '/api/v1/users', async () => {
+              return HttpResponse.json( {
+                validationErrors: {
+                  username: "Username cannot be null"
+                }
+              }, { status: 400 } );
+            } )
+          );
+          const { user, elements: { button } } = await setup();
+          await user.click( button );
+          const error = await screen.findByText( "Username cannot be null" );
+          expect( error ).toBeInTheDocument();
+        } );
+      } );
+
     } );
   } );
 } );

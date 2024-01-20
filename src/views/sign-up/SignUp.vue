@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import axios from 'axios';
+import axios, { AxiosError, type AxiosHeaderValue } from 'axios';
 import { computed, reactive, ref } from 'vue';
+
+type ErrorsType = { validationErrors: any; } | AxiosError;
 
 const formState = reactive( {
   username: '',
@@ -10,8 +12,9 @@ const formState = reactive( {
 } );
 
 const apiProgress = ref( false );
-const isSubmitted = ref( false );
-const successMessage = ref();
+const errorMessage = ref<string | undefined>( undefined );
+const successMessage = ref<string | undefined>( undefined );
+const errors = ref<ErrorsType>( { validationErrors: null } );
 
 //computed allows to only run into the function when the value changes
 const isDisabled = computed( () => {
@@ -22,12 +25,24 @@ const isDisabled = computed( () => {
 
 const onSubmit = async () => {
   apiProgress.value = true;
-  isSubmitted.value = true;
+  errorMessage.value = undefined;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordRepeat: _, ...data } = formState; //destructuring
-  const response = await axios.post( '/api/v1/users', data );
-  // receives response message from the backend server
-  successMessage.value = response?.data?.message;
+  try {
+    const response = await axios.post( '/api/v1/users', data );
+    // receives response message from the backend server
+    successMessage.value = response?.data?.message;
+  } catch ( error ) {
+    if ( axios.isAxiosError( error ) && error.response?.status === 400 ) {
+      errors.value = error?.response?.data?.validationErrors;
+    }
+    else {
+      errorMessage.value = 'Unexpected error occured. Please try again.';
+    }
+  } finally {
+    apiProgress.value = false;
+
+  }
 };
 </script>
 
@@ -43,6 +58,7 @@ const onSubmit = async () => {
         <div class="mb-3">
           <label class="form-label" for="username">Username</label>
           <input class="form-control" type="text" id="username" v-model=" formState.username " />
+          <div v-if=" errors && 'username' in errors ">{{ errors.username }}</div>
         </div>
         <div class="mb-3">
           <label class="form-label" for="email">Email</label>
@@ -56,6 +72,11 @@ const onSubmit = async () => {
           <label class="form-label" for="passwordRepeat">Password Repeat</label>
           <input class="form-control" type="password" id="passwordRepeat" v-model=" formState.passwordRepeat " />
         </div>
+        <div class="">
+          <div v-if=" errorMessage " class="alert alert-danger alert-padding-y-0 h-3 lh-3" role="alert">
+            <span>{{ errorMessage }}</span>
+          </div>
+        </div>
         <div class="text-center">
           <button class="btn btn-primary" :disabled=" isDisabled || apiProgress " type="submit">
             <span v-if=" apiProgress " role="status" class="spinner-border spinner-border-sm"></span>Sign Up</button>
@@ -64,9 +85,9 @@ const onSubmit = async () => {
       </section>
     </article>
   </form>
-  <aside v-else class="">
+  <div v-else class="">
     <div class="alert alert-success alert-padding-y-0 h-3 lh-3" role="alert">
       <span>{{ successMessage }}</span>
     </div>
-  </aside>
+  </div>
 </template>

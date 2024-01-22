@@ -23,6 +23,10 @@ const isDisabled = computed(() => {
     : true
 })
 
+const passwordMissmatchError = computed(() => {
+  return formState.password !== formState.passwordRepeat ? 'Password mismatch' : undefined
+})
+
 const onSubmit = async () => {
   apiProgress.value = true
   errorMessage.value = undefined
@@ -74,7 +78,7 @@ const onSubmit = async () => {
         <UserInput
           label="Password Repeat"
           id="passwordRepeat"
-          :help="'passwordRepeat' in errors ? (errors.passwordRepeat as string) : undefined"
+          :help="passwordMissmatchError"
           v-model="formState.passwordRepeat"
         />
 

@@ -31,7 +31,7 @@ const setup = async () => {
   return {
     ...result,
     user,
-    elements: { button }
+    elements: { button, passwordInput, passwordRepeatInput }
   };
 };
 
@@ -97,6 +97,15 @@ describe( 'Sign Up', () => {
   it( 'does not display spinner', () => {
     render( SignUp );
     expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
+  } );
+
+  describe( 'when passwords do not match', () => {
+    it( 'displays error', async () => {
+      const { user, elements: { passwordInput, passwordRepeatInput } } = await setup();
+      await user.type( passwordInput, 'Password1' );
+      await user.type( passwordRepeatInput, 'Password2' );
+      expect( screen.getByText( 'Password mismatch' ) ).toBeInTheDocument();
+    } );
   } );
 
   describe( 'when user sets same value for password inputs', () => {

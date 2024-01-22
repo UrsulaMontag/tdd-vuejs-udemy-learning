@@ -2,13 +2,16 @@ import { render, screen, waitFor } from '@testing-library/vue';
 import userEvent from '@testing-library/user-event';
 import SignUp from '@/views/sign-up/SignUp.vue';
 import { vi } from 'vitest';
-import axios from 'axios';
+import axios, { type AxiosStatic } from 'axios';
 
-vi.mock( 'axios', () => {
+vi.mock( 'axios', async ( importOriginal ) => {
+  const actual: AxiosStatic = await importOriginal();
   return {
+    ...actual,
     default: {
-      post: vi.fn()
-    }
+      ...actual.defaults,
+      post: vi.fn(),
+    },
   };
 } );
 
@@ -162,7 +165,7 @@ describe( 'Sign Up', () => {
           } );
           const { user, elements: { button } } = await setup();
           await user.click( button );
-          const error = await screen.findByText( "Username cannot be null" );
+          const error = await screen.findByText( /Username cannot be null/i );
           expect( error ).toBeInTheDocument();
         } );
       } );

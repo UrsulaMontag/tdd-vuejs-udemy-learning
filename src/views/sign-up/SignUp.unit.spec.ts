@@ -151,22 +151,26 @@ describe( 'Sign Up', () => {
         } );
       } );
 
-      describe( 'when username is invalid', () => {
-        it( 'displays validation error', async () => {
-          vi.mocked( axios.post ).mockRejectedValue( {
+      describe.each( [
+        { field: 'username', message: "Username cannot be null" },
+        { field: 'email', message: 'Email cannot be null' },
+        { field: 'password', message: "Password cannot be null" }
+      ] )( 'when $field is invalid', ( { field, message } ) => {
+        it( `displays ${ message }`, async () => {
+          vi.mocked( axios.post ).mockImplementation( () => Promise.reject( {
             response: {
               status: 400,
               data: {
                 validationErrors: {
-                  username: 'Username cannot be null'
+                  [ field ]: message
                 }
               }
             }
-          } );
+          } ) );
           const { user, elements: { button } } = await setup();
           await user.click( button );
-          const error = await screen.findByText( /Username cannot be null/i );
-          expect( error ).toBeInTheDocument();
+          const error = await screen.findByText( message );
+          await waitFor( () => { expect( error ).toBeInTheDocument(); } );
         } );
       } );
     } );

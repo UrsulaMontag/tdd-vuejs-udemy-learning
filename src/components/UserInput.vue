@@ -1,11 +1,21 @@
 <script setup lang="ts">
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   label: String,
   id: String,
   help: String,
   modelValue: String
 })
 defineEmits(['update:modelValue'])
+
+const type = computed(() => {
+  return props.id === 'password' || props.id === 'passwordRepeat'
+    ? 'password'
+    : props.id === 'email'
+      ? 'email'
+      : 'text'
+})
 </script>
 
 <template>
@@ -13,10 +23,11 @@ defineEmits(['update:modelValue'])
     <label class="form-label" :for="id">{{ label }}</label>
     <input
       class="form-control"
-      type="text"
+      :class="{ 'is-invalid': help }"
+      :type="type"
       :id="id"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
     />
-    <span v-if="help">{{ help }}</span>
+    <span data-testid="input-error-message" class="invalid-feedback" v-if="help">{{ help }}</span>
   </div>
 </template>

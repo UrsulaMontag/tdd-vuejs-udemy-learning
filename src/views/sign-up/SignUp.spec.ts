@@ -138,7 +138,10 @@ describe( 'Sign Up', () => {
               return HttpResponse.json( {} );
             } )
           );
-          const { user, elements: { button } } = await setup();
+          const {
+            user,
+            elements: { button }
+          } = await setup();
           await user.click( button );
           expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
         } );
@@ -170,7 +173,10 @@ describe( 'Sign Up', () => {
               return HttpResponse.error();
             } )
           );
-          const { user, elements: { button } } = await setup();
+          const {
+            user,
+            elements: { button }
+          } = await setup();
           await user.click( button );
           const text = await screen.findByText( 'Unexpected error occured. Please try again.' );
           expect( text ).toBeInTheDocument();
@@ -181,7 +187,10 @@ describe( 'Sign Up', () => {
               return HttpResponse.error();
             } )
           );
-          const { user, elements: { button } } = await setup();
+          const {
+            user,
+            elements: { button }
+          } = await setup();
           await user.click( button );
           await waitFor( () => expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument() );
         } );
@@ -198,7 +207,10 @@ describe( 'Sign Up', () => {
                 return HttpResponse.json( {} );
               } )
             );
-            const { user, elements: { button } } = await setup();
+            const {
+              user,
+              elements: { button }
+            } = await setup();
             await user.click( button );
             const text = await screen.findByText( 'Unexpected error occured. Please try again.' );
             await user.click( button );
@@ -206,24 +218,36 @@ describe( 'Sign Up', () => {
           } );
         } );
       } );
-      describe( 'when username is invalid', () => {
-        it( 'displays validation error', async () => {
+
+      describe.each( [
+        { field: 'username', message: "Username cannot be null" },
+        { field: 'email', message: 'Email cannot be null' },
+        { field: 'password', message: "Password cannot be null" }
+      ] )( 'when $field is invalid', ( { field, message } ) => {
+        it( `displays ${ message }`, async () => {
           server.use(
             http.post( '/api/v1/users', async () => {
-              return HttpResponse.json( {
-                validationErrors: {
-                  username: "Username cannot be null"
-                }
-              }, { status: 400 } );
+              return HttpResponse.json(
+                {
+                  validationErrors: {
+                    [ field ]: message
+                  }
+                },
+                { status: 400 }
+              );
             } )
           );
-          const { user, elements: { button } } = await setup();
+          const {
+            user,
+            elements: { button }
+          } = await setup();
           await user.click( button );
-          const error = await screen.findByText( "Username cannot be null" );
-          expect( error ).toBeInTheDocument();
+          const error = await screen.findByText( message );
+          await waitFor( () => {
+            expect( error ).toBeInTheDocument();
+          } );
         } );
       } );
-
     } );
   } );
 } );

@@ -2,10 +2,9 @@
 import axios, { AxiosError } from 'axios'
 import { computed, reactive, ref } from 'vue'
 import UserInput from '@/components/UserInput.vue'
+import { type FormStateType, type ErrorsType, type ResponseDataType } from './sign-up-types'
 
-type ErrorsType = { validationErrors: any } | AxiosError
-
-const formState = reactive({
+const formState = reactive<FormStateType>({
   username: '',
   email: '',
   password: '',
@@ -15,7 +14,7 @@ const formState = reactive({
 const apiProgress = ref(false)
 const errorMessage = ref<string | undefined>(undefined)
 const successMessage = ref<string | undefined>(undefined)
-const errors = ref<ErrorsType>({ validationErrors: null })
+const errors = ref<ErrorsType>({})
 
 //computed allows to only run into the function when the value changes
 const isDisabled = computed(() => {
@@ -30,7 +29,7 @@ const onSubmit = async () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordRepeat: _, ...data } = formState //destructuring
   try {
-    const response = await axios.post('/api/v1/users', data)
+    const response = await axios.post<ResponseDataType>('/api/v1/users', data)
     // receives response message from the backend server
     successMessage.value = response?.data?.message
   } catch (error) {
@@ -60,28 +59,25 @@ const onSubmit = async () => {
           :help="'username' in errors ? (errors.username as string) : undefined"
           v-model="formState.username"
         />
-        <!-- <div class="mb-3">
-          <label class="form-label" for="username">Username</label>
-          <input class="form-control" type="text" id="username" v-model=" formState.username " />
-          <div v-if=" errors && 'username' in errors ">{{ errors.username }}</div>
-        </div> -->
-        <div class="mb-3">
-          <label class="form-label" for="email">Email</label>
-          <input class="form-control" type="email" id="email" v-model="formState.email" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="password">Password</label>
-          <input class="form-control" type="password" id="password" v-model="formState.password" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="passwordRepeat">Password Repeat</label>
-          <input
-            class="form-control"
-            type="password"
-            id="passwordRepeat"
-            v-model="formState.passwordRepeat"
-          />
-        </div>
+        <UserInput
+          label="Email"
+          id="email"
+          :help="'email' in errors ? (errors.email as string) : undefined"
+          v-model="formState.email"
+        />
+        <UserInput
+          label="Password"
+          id="password"
+          :help="'password' in errors ? (errors.password as string) : undefined"
+          v-model="formState.password"
+        />
+        <UserInput
+          label="Password Repeat"
+          id="passwordRepeat"
+          :help="'passwordRepeat' in errors ? (errors.passwordRepeat as string) : undefined"
+          v-model="formState.passwordRepeat"
+        />
+
         <div class="">
           <div
             v-if="errorMessage"

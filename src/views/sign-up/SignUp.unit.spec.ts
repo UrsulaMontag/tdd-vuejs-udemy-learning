@@ -10,10 +10,18 @@ vi.mock( 'axios', async ( importOriginal ) => {
     ...actual,
     default: {
       ...actual.defaults,
-      post: vi.fn(),
-    },
+      post: vi.fn()
+    }
   };
 } );
+
+type ElementKeys =
+  | 'button'
+  | 'passwordInput'
+  | 'passwordRepeatInput'
+  | 'usernameInput'
+  | 'emailInput';
+type Elements = Record<ElementKeys, HTMLElement>;
 
 const setup = async () => {
   const user = userEvent.setup();
@@ -31,7 +39,7 @@ const setup = async () => {
   return {
     ...result,
     user,
-    elements: { button }
+    elements: { button, usernameInput, emailInput, passwordInput, passwordRepeatInput }
   };
 };
 //when use mocks in tests, we have to take care of clearing mocks before each test, that the tests do not effect each other
@@ -152,12 +160,12 @@ describe( 'Sign Up', () => {
       } );
 
       describe.each( [
-        { field: 'username', message: "Username cannot be null" },
-        { field: 'email', message: 'Email cannot be null' },
-        { field: 'password', message: "Password cannot be null" }
+        { field: 'username', message: 'Username cannot be null' },
+        { field: 'email', message: 'E-mail cannot be null' },
+        { field: 'password', message: 'Password cannot be null' }
       ] )( 'when $field is invalid', ( { field, message } ) => {
         it( `displays ${ message }`, async () => {
-          vi.mocked( axios.post ).mockImplementation( () => Promise.reject( {
+          vi.mocked( axios.post ).mockRejectedValue( {
             response: {
               status: 400,
               data: {
@@ -166,11 +174,32 @@ describe( 'Sign Up', () => {
                 }
               }
             }
-          } ) );
-          const { user, elements: { button } } = await setup();
-          await user.click( button );
+          } );
+          const setupResult = await setup();
+          const elements: Elements = setupResult.elements;
+          const user = setupResult.user;
+          await user.click( elements.button );
           const error = await screen.findByText( message );
-          await waitFor( () => { expect( error ).toBeInTheDocument(); } );
+          expect( error ).toBeInTheDocument();
+        } );
+        it( `clears validation error when user changes ${ field }`, async () => {
+          vi.mocked( axios.post ).mockRejectedValue( {
+            response: {
+              status: 400,
+              data: {
+                validationErrors: {
+                  [ field ]: message
+                }
+              }
+            }
+          } );
+
+          const setupResult = await setup();
+          const elements: Elements = setupResult.elements;
+          const user = setupResult.user;
+          await user.click( elements.button );
+          await user.type( elements[ `${ field }Input` as ElementKeys ], 'updated' );
+          expect( screen.queryByText( message ) ).not.toBeInTheDocument();
         } );
       } );
     } );

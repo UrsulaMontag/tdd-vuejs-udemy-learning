@@ -31,7 +31,7 @@ const setup = async () => {
   return {
     ...result,
     user,
-    elements: { button, passwordInput, passwordRepeatInput }
+    elements: { button, passwordInput, passwordRepeatInput, usernameInput, emailInput }
   };
 };
 
@@ -255,6 +255,32 @@ describe( 'Sign Up', () => {
           await waitFor( () => {
             expect( error ).toBeInTheDocument();
           } );
+        } );
+
+        it( 'clears validation error when user changes the value', async () => {
+          server.use(
+            http.post( '/api/v1/users', async () => {
+              return HttpResponse.json(
+                {
+                  validationErrors: {
+                    [ field ]: message
+                  }
+                },
+                { status: 400 }
+              );
+            } )
+          );
+
+          type ElementKeys = 'button' | 'passwordInput' | 'passwordRepeatInput' | 'usernameInput' | 'emailInput';
+          type Elements = Record<ElementKeys, HTMLElement>;
+
+          const setupResult = await setup();
+          const elements: Elements = setupResult.elements;
+          const user = setupResult.user;
+          await user.click( elements.button );
+          const error = await screen.findByText( message );
+          await user.type( elements[ `${ field }Input` as ElementKeys ], 'updated' );
+          expect( error ).not.toBeInTheDocument();
         } );
       } );
     } );

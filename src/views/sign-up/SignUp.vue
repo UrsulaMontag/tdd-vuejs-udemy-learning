@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios, { AxiosError } from 'axios'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import UserInput from '@/components/UserInput.vue'
 import { type FormStateType, type ErrorsType, type ResponseDataType } from './sign-up-types'
 
@@ -25,6 +25,16 @@ const isDisabled = computed(() => {
 
 const passwordMissmatchError = computed(() => {
   return formState.password !== formState.passwordRepeat ? 'Password mismatch' : undefined
+})
+
+const helpValue = computed(() => {
+  return (errors.value as any).username
+})
+
+watch([() => formState.username, () => formState.email, () => formState.password], () => {
+  if (('username' in errors.value) as any) delete (errors.value as any).username
+  if (('email' in errors.value) as any) delete (errors.value as any).email
+  if (('password' in errors.value) as any) delete (errors.value as any).password
 })
 
 const onSubmit = async () => {
@@ -57,12 +67,7 @@ const onSubmit = async () => {
         <h1>Sign Up</h1>
       </header>
       <section class="card-body">
-        <UserInput
-          label="Username"
-          id="username"
-          :help="'username' in errors ? (errors.username as string) : undefined"
-          v-model="formState.username"
-        />
+        <UserInput label="Username" id="username" :help="helpValue" v-model="formState.username" />
         <UserInput
           label="Email"
           id="email"

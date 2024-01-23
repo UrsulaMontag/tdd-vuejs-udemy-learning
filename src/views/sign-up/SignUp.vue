@@ -3,7 +3,8 @@ import axios, { AxiosError } from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
 import UserInput from '@/components/UserInput.vue'
 import { type FormStateType, type ErrorsType, type ResponseDataType } from './sign-up-types'
-
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const formState = reactive<FormStateType>({
   username: '',
   email: '',
@@ -24,7 +25,7 @@ const isDisabled = computed(() => {
 })
 
 const passwordMissmatchError = computed(() => {
-  return formState.password !== formState.passwordRepeat ? 'Password mismatch' : undefined
+  return formState.password !== formState.passwordRepeat ? t('passwordMismatch') : undefined
 })
 
 const helpValue = computed(() => {
@@ -50,7 +51,7 @@ const onSubmit = async () => {
     if (error instanceof AxiosError && error.response?.status === 400) {
       errors.value = error?.response?.data?.validationErrors
     } else {
-      errorMessage.value = 'Unexpected error occured. Please try again.'
+      errorMessage.value = t('genericError')
     }
   } finally {
     apiProgress.value = false
@@ -64,24 +65,29 @@ const onSubmit = async () => {
   <form @submit.prevent="onSubmit" class="card" data-testid="form-sign-up" v-if="!successMessage">
     <article class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
       <header class="card-header text-center">
-        <h1>Sign Up</h1>
+        <h1>{{ $t('signUp') }}</h1>
       </header>
       <section class="card-body">
-        <UserInput label="Username" id="username" :help="helpValue" v-model="formState.username" />
         <UserInput
-          label="Email"
+          :label="$t('username')"
+          id="username"
+          :help="helpValue"
+          v-model="formState.username"
+        />
+        <UserInput
+          :label="$t('email')"
           id="email"
           :help="'email' in errors ? (errors.email as string) : undefined"
           v-model="formState.email"
         />
         <UserInput
-          label="Password"
+          :label="$t('password')"
           id="password"
           :help="'password' in errors ? (errors.password as string) : undefined"
           v-model="formState.password"
         />
         <UserInput
-          label="Password Repeat"
+          :label="$t('passwordRepeat')"
           id="passwordRepeat"
           :help="passwordMissmatchError"
           v-model="formState.passwordRepeat"
@@ -99,7 +105,7 @@ const onSubmit = async () => {
         <div class="text-center">
           <button class="btn btn-primary" :disabled="isDisabled || apiProgress" type="submit">
             <span v-if="apiProgress" role="status" class="spinner-border spinner-border-sm"></span
-            >Sign Up
+            >{{ $t('signUp') }}
           </button>
         </div>
       </section>

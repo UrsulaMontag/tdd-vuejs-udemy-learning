@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import axios, { AxiosError } from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
-import UserInput from '@/components/UserInput.vue'
+import { UserInput } from '@/components'
 import { type FormStateType, type ErrorsType, type ResponseDataType } from './sign-up-types'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()

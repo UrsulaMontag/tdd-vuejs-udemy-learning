@@ -1,11 +1,8 @@
 import { render, screen, waitFor } from 'test/helper'
-import userEvent from '@testing-library/user-event'
 import SignUp from '@/views/sign-up/SignUp.vue'
 import { setupServer } from 'msw/node'
 import { HttpResponse, http, type DefaultBodyType, delay } from 'msw'
-import { afterAll } from 'vitest'
-import { i18n } from '@/locales'
-import { computed, ref } from 'vue'
+import { beforeAll, beforeEach, afterAll } from 'vitest'
 
 let requestBody: DefaultBodyType
 let counter = 0
@@ -18,9 +15,7 @@ const server = setupServer(
 )
 
 const setup = async () => {
-  const user = userEvent.setup()
-
-  const result = render(SignUp)
+  const { result, user } = render(SignUp)
   const usernameInput = screen.getByLabelText('Username')
   const emailInput = screen.getByLabelText('Email')
   const passwordInput = screen.getByLabelText('Password')
@@ -36,19 +31,6 @@ const setup = async () => {
     elements: { button, passwordInput, passwordRepeatInput, usernameInput, emailInput }
   }
 }
-// Create a ref with the initial value 'en'
-const locale = ref<'en' | 'de'>('en')
-
-// Create a computed property based on the ref
-const localeComputed = computed({
-  get: () => locale.value,
-  set: (value) => {
-    locale.value = value
-  }
-})
-
-// Assign the computed property to i18n.global.locale
-i18n.global.locale = localeComputed
 
 beforeAll(() => server.listen())
 beforeEach(() => {
@@ -56,7 +38,6 @@ beforeEach(() => {
   server.resetHandlers()
 })
 afterAll(() => server.close())
-afterEach(() => (locale.value = 'en'))
 
 describe('Sign Up', () => {
   it('has a sign up header', () => {

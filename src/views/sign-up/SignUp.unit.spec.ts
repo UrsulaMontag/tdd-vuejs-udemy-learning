@@ -1,10 +1,14 @@
+vi.hoisted(() => vi.resetModules())
+
+vi.mock('vue-i18n')
+
 import { render, screen, waitFor } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
 import SignUp from '@/views/sign-up/SignUp.vue'
 import { vi } from 'vitest'
 import axios, { type AxiosStatic } from 'axios'
+import { useI18n, type Composer } from 'vue-i18n'
 import en from '@/locales/translations/en.json'
-import { useI18n } from 'vue-i18n'
 
 vi.mock('axios', async (importOriginal) => {
   const actual: AxiosStatic = await importOriginal()
@@ -16,9 +20,12 @@ vi.mock('axios', async (importOriginal) => {
     }
   }
 })
-vi.mock('vue-i18n')
-vi.mocked(useI18n).mockReturnValue({ t: (key: string) => en[key as keyof typeof en] })
 
+const mockI18n: Partial<Composer> = {
+  t: (key: string) => en[key as keyof typeof en]
+}
+
+vi.mocked(useI18n).mockReturnValue(mockI18n as Composer)
 type ElementKeys =
   | 'button'
   | 'passwordInput'
@@ -174,7 +181,7 @@ describe('Sign Up', () => {
       describe.each([
         { field: 'username', message: 'Username cannot be null' },
         { field: 'email', message: 'E-mail cannot be null' },
-        { field: 'password', message: 'Password cannot be null' }
+        { field: 'password', message: 'Password must be at least 6 characters' }
       ])('when $field is invalid', ({ field, message }) => {
         it(`displays ${message}`, async () => {
           vi.mocked(axios.post).mockRejectedValue({

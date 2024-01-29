@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
 import { UserInput } from '@/components'
-import { type FormStateType, type ErrorsType, type ResponseDataType } from './sign-up-types'
+import { type FormStateType, type ErrorsType } from './sign-up-types'
 import { useI18n } from 'vue-i18n'
+import { signUp } from './api'
+
 const { t } = useI18n()
 const formState = reactive<FormStateType>({
   username: '',
@@ -44,7 +46,7 @@ const onSubmit = async () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { passwordRepeat: _, ...data } = formState //destructuring
   try {
-    const response = await axios.post<ResponseDataType>('/api/v1/users', data)
+    const response = await signUp(data)
     // receives response message from the backend server
     successMessage.value = response?.data?.message
   } catch (error) {

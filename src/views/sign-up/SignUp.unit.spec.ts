@@ -6,23 +6,20 @@ import { render, screen, waitFor } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
 import SignUp from '@/views/sign-up/SignUp.vue'
 import { vi } from 'vitest'
-import axios, { type AxiosStatic } from 'axios'
 import { useI18n, type Composer } from 'vue-i18n'
 import en from '@/locales/translations/en.json'
+import { computed } from 'vue'
+import { signUp } from './api'
 
-vi.mock('axios', async (importOriginal) => {
-  const actual: AxiosStatic = await importOriginal()
-  return {
-    ...actual,
-    default: {
-      ...actual.defaults,
-      post: vi.fn()
-    }
-  }
-})
-
+vi.mock('./api', () => ({
+  signUp: vi.fn(() => Promise.resolve({ data: {} }))
+}))
 const mockI18n: Partial<Composer> = {
-  t: (key: string) => en[key as keyof typeof en]
+  t: (key: string) => en[key as keyof typeof en],
+  locale: computed({
+    get: () => 'ab',
+    set: () => {}
+  })
 }
 
 vi.mocked(useI18n).mockReturnValue(mockI18n as Composer)
@@ -70,13 +67,13 @@ describe('Sign Up', () => {
   describe('when user sets same value for password inputs', () => {
     describe('when user submits form', () => {
       it('sends username, email, password to backend', async () => {
-        vi.mocked(axios.post).mockResolvedValue({ data: {} })
+        vi.mocked(signUp).mockResolvedValue({ data: {} } as any)
         const {
           user,
           elements: { button }
         } = await setup()
         await user.click(button)
-        expect(axios.post).toHaveBeenCalledWith('/api/v1/users', {
+        expect(signUp).toHaveBeenCalledWith({
           username: 'user1',
           email: 'user123@mail.com',
           password: 'Password1'
@@ -84,10 +81,10 @@ describe('Sign Up', () => {
       })
       describe('when there is an ongoing api call', () => {
         it('does not allow clicking the button', async () => {
-          vi.mocked(axios.post).mockImplementation(
+          vi.mocked(signUp).mockImplementation(
             () =>
               new Promise((resolve) => {
-                setTimeout(() => resolve({ data: {} }), 1000)
+                setTimeout(() => resolve({ data: {} } as any), 1000)
               })
           )
           const {
@@ -97,13 +94,13 @@ describe('Sign Up', () => {
           await user.click(button)
           await user.click(button)
 
-          expect(axios.post).toHaveBeenCalledTimes(1)
+          expect(signUp).toHaveBeenCalledTimes(1)
         })
         it('displays spinner', async () => {
-          vi.mocked(axios.post).mockImplementation(
+          vi.mocked(signUp).mockImplementation(
             () =>
               new Promise((resolve) => {
-                setTimeout(() => resolve({ data: {} }), 1000)
+                setTimeout(() => resolve({ data: {} } as any), 1000)
               })
           )
           const {
@@ -116,9 +113,9 @@ describe('Sign Up', () => {
       })
       describe('when success response is received', () => {
         beforeEach(() => {
-          vi.mocked(axios.post).mockResolvedValue({
+          vi.mocked(signUp).mockResolvedValue({
             data: { message: 'User created successfully' }
-          })
+          } as any)
         })
         it('displays success message received from backend', async () => {
           const {
@@ -141,7 +138,7 @@ describe('Sign Up', () => {
       })
       describe('when network failure occurs', () => {
         beforeEach(() => {
-          vi.mocked(axios.post).mockRejectedValue({})
+          vi.mocked(signUp).mockRejectedValue({})
         })
         it('displays generic message', async () => {
           const {
@@ -163,9 +160,11 @@ describe('Sign Up', () => {
 
         describe('when user submits form again', () => {
           it('hides error message when api request is in progress', async () => {
-            vi.mocked(axios.post).mockRejectedValueOnce({}).mockResolvedValue({
-              data: {}
-            })
+            vi.mocked(signUp)
+              .mockRejectedValueOnce({})
+              .mockResolvedValue({
+                data: {}
+              } as any)
             const {
               user,
               elements: { button }
@@ -181,10 +180,10 @@ describe('Sign Up', () => {
       describe.each([
         { field: 'username', message: 'Username cannot be null' },
         { field: 'email', message: 'E-mail cannot be null' },
-        { field: 'password', message: 'Password must be at least 6 characters' }
+        { field: 'password', message: 'Password cannot be null' }
       ])('when $field is invalid', ({ field, message }) => {
         it(`displays ${message}`, async () => {
-          vi.mocked(axios.post).mockRejectedValue({
+          vi.mocked(signUp).mockRejectedValue({
             response: {
               status: 400,
               data: {
@@ -194,15 +193,19 @@ describe('Sign Up', () => {
               }
             }
           })
-          const setupResult = await setup()
-          const elements: Elements = setupResult.elements
-          const user = setupResult.user
-          await user.click(elements.button)
+          const {
+            user,
+            elements: { button }
+          } = await setup()
+          await user.click(button)
           const error = await screen.findByText(message)
-          expect(error).toBeInTheDocument()
+
+          await waitFor(() => {
+            expect(error).toBeInTheDocument()
+          })
         })
         it(`clears validation error when user changes ${field}`, async () => {
-          vi.mocked(axios.post).mockRejectedValue({
+          vi.mocked(signUp).mockRejectedValue({
             response: {
               status: 400,
               data: {

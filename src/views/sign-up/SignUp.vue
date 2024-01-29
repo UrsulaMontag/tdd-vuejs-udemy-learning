@@ -62,10 +62,10 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <!-- v-show is not removing the element from the DOM, it just hides it. that means v-show has better 
+  <div data-testid="sign-up-page" class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+    <!-- v-show is not removing the element from the DOM, it just hides it. that means v-show has better 
     performance when toggling the view of the element often than v-if -->
-  <form @submit.prevent="onSubmit" class="card" data-testid="form-sign-up" v-if="!successMessage">
-    <article class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+    <form @submit.prevent="onSubmit" class="card" data-testid="form-sign-up" v-if="!successMessage">
       <header class="card-header text-center">
         <h1>{{ $t('signUp') }}</h1>
       </header>
@@ -111,11 +111,11 @@ const onSubmit = async () => {
           </button>
         </div>
       </section>
-    </article>
-  </form>
-  <div v-else class="">
-    <div class="alert alert-success alert-padding-y-0 h-3 lh-3" role="alert">
-      <span>{{ successMessage }}</span>
+    </form>
+    <div v-else class="">
+      <div class="alert alert-success alert-padding-y-0 h-3 lh-3" role="alert">
+        <span>{{ successMessage }}</span>
+      </div>
     </div>
   </div>
 </template>

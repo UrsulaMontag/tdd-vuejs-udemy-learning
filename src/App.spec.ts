@@ -1,6 +1,12 @@
+
+// No need to explicitly define the __mocks__ folder 
+// because vitest will automatically look for it
+vi.mock( '@/views/activation/Appactivation.vue' );
+
 import { render, router, screen, waitFor } from 'test/helper';
 import App from '@/App.vue';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 
 const setup = async ( path: string ) => {
   router.push( path );

@@ -9,16 +9,18 @@ const setLanguage = (language: string) => {
 </script>
 
 <template>
-  <img
-    src="https://flagcdn.com/16x12/de.png"
-    role="button"
-    data-testid="language-de-selector"
-    @click="setLanguage('de')"
-  />
-  <img
-    src="https://flagcdn.com/16x12/gb.png"
-    role="button"
-    data-testid="language-en-selector"
-    @click="setLanguage('en')"
-  />
+  <div>
+    <img
+      src="https://flagcdn.com/16x12/de.png"
+      role="button"
+      data-testid="language-de-selector"
+      @click="setLanguage('de')"
+    />
+    <img
+      src="https://flagcdn.com/16x12/gb.png"
+      role="button"
+      data-testid="language-en-selector"
+      @click="setLanguage('en')"
+    />
+  </div>
 </template>

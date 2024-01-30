@@ -1,12 +1,12 @@
-import { render, screen } from 'test/helper'
-import LanguageSelector from '../LanguageSelector.vue'
+import { render, screen } from 'test/helper';
+import LanguageSelector from '../LanguageSelector.vue';
 
-describe('Language selector', () => {
-  describe.each([
+describe( 'Language selector', () => {
+  describe.each( [
     { language: 'en', text: 'Sign Up' },
     { language: 'de', text: 'Anmeldung' }
-  ])('when user select $language', ({ language, text }) => {
-    it('displays expected text', async () => {
+  ] )( 'when user select $language', ( { language, text } ) => {
+    it( 'displays expected text', async () => {
       const TempComponent = {
         components: {
           LanguageSelector
@@ -15,13 +15,14 @@ describe('Language selector', () => {
             <span>{{ $t('signUp') }}</span>
             <LanguageSelector />
             `
-      }
-      const { user } = render(TempComponent)
-      await user.click(screen.getByTestId(`language-${language}-selector`))
-      expect(screen.getByText(text)).toBeInTheDocument()
-    })
+      };
+      const { user } = render( TempComponent );
+      await user.click( screen.getByTestId( `language-${ language }-selector` ) );
+      const textElement = await screen.findByText( new RegExp( text, 'i' ) );
+      expect( textElement ).toBeInTheDocument();
+    } );
 
-    it('stores selected language in local storage', async () => {
+    it( 'stores selected language in local storage', async () => {
       const TempComponent = {
         components: {
           LanguageSelector
@@ -30,10 +31,10 @@ describe('Language selector', () => {
             <span>{{ $t('signUp') }}</span>
             <LanguageSelector />
             `
-      }
-      const { user } = render(TempComponent)
-      await user.click(screen.getByTestId(`language-${language}-selector`))
-      expect(localStorage.getItem('app-language')).toBe(language)
-    })
-  })
-})
+      };
+      const { user } = render( TempComponent );
+      await user.click( screen.getByTestId( `language-${ language }-selector` ) );
+      expect( localStorage.getItem( 'app-language' ) ).toBe( language );
+    } );
+  } );
+} );

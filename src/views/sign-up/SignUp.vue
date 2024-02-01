@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { AxiosError } from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
-import { UserInput } from '@/components'
-import { type FormStateType, type ErrorsType } from './sign-up-types'
+import { AppSpinner, UserInput } from '@/components'
+import { type FormStateType, type ErrorsType } from '@/shared/types/api-error-types'
 import { useI18n } from 'vue-i18n'
 import { signUp } from './api'
 
@@ -106,8 +106,7 @@ const onSubmit = async () => {
         </div>
         <div class="text-center">
           <button class="btn btn-primary" :disabled="isDisabled || apiProgress" type="submit">
-            <span v-if="apiProgress" role="status" class="spinner-border spinner-border-sm"></span
-            >{{ $t('signUp') }}
+            <AppSpinner v-if="apiProgress" />{{ $t('signUp') }}
           </button>
         </div>
       </section>

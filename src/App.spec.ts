@@ -13,7 +13,6 @@ const setup = async ( path: string ) => {
   await router.isReady();
   render( App );
 };
-
 describe( 'Routing', () => {
   describe.each( [
     { path: '/', pageId: 'home-page' },

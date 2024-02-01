@@ -5,5 +5,5 @@
   "password": "Passwort",
   "passwordRepeat": "Passwort wiederholen",
   "passwordMismatch": "Passwörter stimmen nicht überein",
-  "genericError": "Unerwarteter Fehler, bitte versuchen Sie es erneut"
+  "genericError": "Unerwarteter Fehler, bitte versuchen Sie es erneut."
 }

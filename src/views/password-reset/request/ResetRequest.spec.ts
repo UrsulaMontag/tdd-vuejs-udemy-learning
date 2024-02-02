@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from 'test/helper';
-import SignUp from '@/views/sign-up/SignUp.vue';
+import ResetRequest from './ResetRequest.vue';
 import { setupServer } from 'msw/node';
 import { HttpResponse, http, type DefaultBodyType, delay } from 'msw';
 import { beforeAll, beforeEach, afterAll } from 'vitest';
@@ -7,29 +7,17 @@ import { i18n } from '@/locales';
 
 let requestBody: DefaultBodyType;
 let counter = 0;
-const server = setupServer(
-    http.post( '/api/v1/users', async ( { request } ) => {
-        requestBody = await request.json();
-        counter += 1;
-        return HttpResponse.json( { message: 'User created successfully' } );
-    } )
-);
+const server = setupServer();
 
 const setup = async () => {
-    const { result, user } = render( SignUp );
-    const usernameInput = screen.getByLabelText( 'Username' );
+    const { result, user } = render( ResetRequest );
     const emailInput = screen.getByLabelText( 'Email' );
-    const passwordInput = screen.getByLabelText( 'Password' );
-    const passwordRepeatInput = screen.getByLabelText( 'Password Repeat' );
-    await user.type( usernameInput, 'user1' );
     await user.type( emailInput, 'user123@mail.com' );
-    await user.type( passwordInput, 'Password1' );
-    await user.type( passwordRepeatInput, 'Password1' );
-    const button = screen.getByRole( 'button', { name: /sign up/i } );
+    const button = screen.getByRole( 'button', { name: /reset password/i } );
     return {
         ...result,
         user,
-        elements: { button, passwordInput, passwordRepeatInput, usernameInput, emailInput }
+        elements: { button, emailInput }
     };
 };
 
@@ -42,82 +30,48 @@ afterAll( () => server.close() );
 
 describe( 'Sign Up', () => {
     it( 'has a sign up header', () => {
-        render( SignUp );
-        const header = screen.getByRole( 'heading', { name: /sign up/i } );
+        render( ResetRequest );
+        const header = screen.getByRole( 'heading', { name: /reset password/i } );
         expect( header ).toBeInTheDocument();
     } );
 
-    it( 'has username input', () => {
-        render( SignUp );
-        expect( screen.getByLabelText( 'Username' ) ).toBeInTheDocument();
-    } );
-
     it( 'has email input', () => {
-        render( SignUp );
+        render( ResetRequest );
         expect( screen.getByLabelText( 'Email' ) ).toBeInTheDocument();
     } );
 
     it( 'has email type for email input', () => {
-        render( SignUp );
+        render( ResetRequest );
         expect( screen.getByLabelText( 'Email' ) ).toHaveAttribute( 'type', 'email' );
     } );
-
-    it( 'has password input', () => {
-        render( SignUp );
-        expect( screen.getByLabelText( 'Password' ) ).toBeInTheDocument();
-    } );
-
-    it( 'has password type for password input', () => {
-        render( SignUp );
-        expect( screen.getByLabelText( 'Password' ) ).toHaveAttribute( 'type', 'password' );
-    } );
-
-    it( 'has password repeat input', () => {
-        render( SignUp );
-        expect( screen.getByLabelText( 'Password Repeat' ) ).toBeInTheDocument();
-    } );
-
-    it( 'has password type for password input', () => {
-        render( SignUp );
-        expect( screen.getByLabelText( 'Password Repeat' ) ).toHaveAttribute( 'type', 'password' );
-    } );
-
-    it( 'has a sign up button', () => {
-        render( SignUp );
-        const button = screen.getByRole( 'button', { name: /sign up/i } );
+    it( 'has a reset password button', () => {
+        render( ResetRequest );
+        const button = screen.getByRole( 'button', { name: /reset password/i } );
         expect( button ).toBeInTheDocument();
     } );
 
-    it( 'disables sign up button initially', () => {
-        render( SignUp );
-        expect( screen.getByRole( 'button', { name: /sign up/i } ) ).toBeDisabled();
+    it( 'disables reset password button initially', () => {
+        render( ResetRequest );
+        expect( screen.getByRole( 'button', { name: /reset password/i } ) ).toBeDisabled();
     } );
     it( 'does not display spinner', () => {
-        render( SignUp );
+        render( ResetRequest );
         expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
     } );
 
-    describe( 'when passwords do not match', () => {
-        it( 'displays error', async () => {
-            const {
-                user,
-                elements: { passwordInput, passwordRepeatInput }
-            } = await setup();
-            await user.type( passwordInput, 'Password1' );
-            await user.type( passwordRepeatInput, 'Password2' );
-            expect( screen.getByText( 'Passwords do not match' ) ).toBeInTheDocument();
-        } );
-    } );
-
-    describe( 'when user sets same value for password inputs', () => {
-        it( 'enables sign-up button', async () => {
+    describe( 'when user sets email', () => {
+        it( 'enables reset password button', async () => {
             const {
                 elements: { button }
             } = await setup();
             expect( button ).toBeEnabled();
         } );
         describe( 'when user submits form', () => {
-            it( 'sends username, email, password to backend', async () => {
+            it( 'sends email to backend', async () => {
+                server.use( http.post( '/api/v1/users/password-reset', async ( { request } ) => {
+                    requestBody = await request.json();
+                    return HttpResponse.json( { message: 'Check your email' } );
+                } ) );
                 const {
                     user,
                     elements: { button }
@@ -125,9 +79,7 @@ describe( 'Sign Up', () => {
                 await user.click( button );
                 await waitFor( () =>
                     expect( requestBody ).toEqual( {
-                        username: 'user1',
                         email: 'user123@mail.com',
-                        password: 'Password1'
                     } )
                 );
             } );
@@ -138,7 +90,7 @@ describe( 'Sign Up', () => {
                     it( 'sends expected language in accept language header', async () => {
                         let acceptLanguage: string | null = null;
                         server.use(
-                            http.post( '/api/v1/users', async ( { request } ) => {
+                            http.post( '/api/v1/users/password-reset', async ( { request } ) => {
                                 acceptLanguage = request.headers.get( 'Accept-Language' );
                                 await delay( 'infinite' );
                                 return HttpResponse.json( {} );
@@ -155,8 +107,15 @@ describe( 'Sign Up', () => {
                 }
             );
 
-            describe( 'when there is an ongoing api call', () => {
+            describe( 'when there is an ongoing api request', () => {
                 it( 'does not allow clicking the button', async () => {
+                    server.use(
+                        http.post( '/api/v1/users/password-reset', async () => {
+                            counter += 1;
+                            await delay( 'infinite' );
+                            return HttpResponse.json( { message: 'Check your email' } );
+                        } )
+                    );
                     const {
                         user,
                         elements: { button }
@@ -167,7 +126,7 @@ describe( 'Sign Up', () => {
                 } );
                 it( 'displays spinner', async () => {
                     server.use(
-                        http.post( '/api/v1/users', async () => {
+                        http.post( '/api/v1/users/password-reset', async () => {
                             await delay( 'infinite' );
                             return HttpResponse.json( {} );
                         } )
@@ -182,28 +141,24 @@ describe( 'Sign Up', () => {
             } );
             describe( 'when success response is received', () => {
                 it( 'displays success message received from backend', async () => {
+                    server.use(
+                        http.post( '/api/v1/users/password-reset', () => {
+                            return HttpResponse.json( { message: 'Check your email' } );
+                        } )
+                    );
                     const {
                         user,
                         elements: { button }
                     } = await setup();
                     await user.click( button );
-                    const text = await screen.findByText( 'User created successfully' );
+                    const text = await screen.findByText( 'Check your email' );
                     expect( text ).toBeInTheDocument();
-                } );
-                it( 'hides sign up form', async () => {
-                    const {
-                        user,
-                        elements: { button }
-                    } = await setup();
-                    const form = screen.getByTestId( 'form-sign-up' );
-                    await user.click( button );
-                    await waitFor( () => expect( form ).not.toBeInTheDocument() );
                 } );
             } );
             describe( 'when network failure occurs', () => {
                 it( 'displays generic message', async () => {
                     server.use(
-                        http.post( 'api/v1/users', () => {
+                        http.post( 'api/v1/users/password-reset', () => {
                             return HttpResponse.error();
                         } )
                     );
@@ -217,7 +172,7 @@ describe( 'Sign Up', () => {
                 } );
                 it( 'hides spinner', async () => {
                     server.use(
-                        http.post( 'api/v1/users', () => {
+                        http.post( 'api/v1/users/password-reset', () => {
                             return HttpResponse.error();
                         } )
                     );
@@ -233,12 +188,14 @@ describe( 'Sign Up', () => {
                     it( 'hides error message when api request is in progress', async () => {
                         let processedFirstRequest = false;
                         server.use(
-                            http.post( 'api/v1/users', async () => {
+                            http.post( 'api/v1/users/password-reset', async () => {
                                 if ( !processedFirstRequest ) {
                                     processedFirstRequest = true;
                                     return HttpResponse.error();
                                 }
-                                return HttpResponse.json( {} );
+                                else {
+                                    return HttpResponse.json( { message: 'Check your email' } );
+                                }
                             } )
                         );
                         const {
@@ -253,18 +210,14 @@ describe( 'Sign Up', () => {
                 } );
             } );
 
-            describe.each( [
-                { field: 'username', message: 'Username cannot be null' },
-                { field: 'email', message: 'Email cannot be null' },
-                { field: 'password', message: 'Password cannot be null' }
-            ] )( 'when $field is invalid', ( { field, message } ) => {
-                it( `displays ${ message }`, async () => {
+            describe( 'when email is invalid', () => {
+                it( `displays validation error`, async () => {
                     server.use(
-                        http.post( '/api/v1/users', async () => {
+                        http.post( '/api/v1/users/password-reset', () => {
                             return HttpResponse.json(
                                 {
                                     validationErrors: {
-                                        [ field ]: message
+                                        email: 'E-mail not found'
                                     }
                                 },
                                 { status: 400 }
@@ -276,41 +229,54 @@ describe( 'Sign Up', () => {
                         elements: { button }
                     } = await setup();
                     await user.click( button );
-                    const error = await screen.findByText( message );
+                    const error = await screen.findByText( 'E-mail not found' );
                     await waitFor( () => {
                         expect( error ).toBeInTheDocument();
                     } );
                 } );
 
-                it( 'clears validation error when user changes the value', async () => {
+                it( 'clears validation error when user changes the email field', async () => {
                     server.use(
-                        http.post( '/api/v1/users', async () => {
+                        http.post( '/api/v1/users/password-reset', () => {
                             return HttpResponse.json(
                                 {
                                     validationErrors: {
-                                        [ field ]: message
+                                        email: 'E-mail not found'
                                     }
                                 },
                                 { status: 400 }
                             );
                         } )
                     );
-
-                    type ElementKeys =
-                        | 'button'
-                        | 'passwordInput'
-                        | 'passwordRepeatInput'
-                        | 'usernameInput'
-                        | 'emailInput';
-                    type Elements = Record<ElementKeys, HTMLElement>;
-
-                    const setupResult = await setup();
-                    const elements: Elements = setupResult.elements;
-                    const user = setupResult.user;
-                    await user.click( elements.button );
-                    const error = await screen.findByText( message );
-                    await user.type( elements[ `${ field }Input` as ElementKeys ], 'updated' );
-                    expect( error ).not.toBeInTheDocument();
+                    const {
+                        user,
+                        elements: { button, emailInput }
+                    } = await setup();
+                    await user.click( button );
+                    const validationError = await screen.findByText( /E-mail not found/i );
+                    await user.type( emailInput, 'Updated' );
+                    expect( validationError ).not.toBeInTheDocument();
+                } );
+            } );
+            describe( 'when there is no validation error', () => {
+                it( 'displays error returned from server', async () => {
+                    server.use(
+                        http.post( '/api/v1/users/password-reset', () => {
+                            return HttpResponse.json(
+                                {
+                                    message: 'Unknown user'
+                                },
+                                { status: 404 }
+                            );
+                        } )
+                    );
+                    const {
+                        user,
+                        elements: { button }
+                    } = await setup();
+                    await user.click( button );
+                    const error = await screen.findByText( 'Unknown user' );
+                    expect( error ).toBeInTheDocument();
                 } );
             } );
         } );

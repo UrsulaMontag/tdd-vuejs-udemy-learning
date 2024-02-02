@@ -1,10 +1,10 @@
 import { AxiosError } from 'axios';
 
 export type FormStateType = {
-    username: string;
+    username?: string;
     email: string;
-    password: string;
-    passwordRepeat: string;
+    password?: string;
+    passwordRepeat?: string;
 };
 type ValidationErrorsType = {
     username?: string;

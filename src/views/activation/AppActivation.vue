@@ -4,6 +4,7 @@ import { ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { AppAlert, AppSpinner } from '@/components'
+import { activate } from './api'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -15,7 +16,7 @@ const status = ref<string>('')
 watchEffect(async () => {
   status.value = 'loading'
   try {
-    const response = await axios.patch(`/api/v1/users/${route.params.token}/active`)
+    const response = await activate(route.params.token)
     successMessage.value = response?.data?.message
     status.value = 'success'
   } catch (error) {

@@ -3,7 +3,7 @@ import { i18n } from "../locales";
 
 const http = axios.create();
 
-http.interceptors.response.use( ( config ) => {
+http.interceptors.request.use( ( config ) => {
     config.headers[ 'Accept-Language' ] = i18n.global.locale.value;
     return config;
 } );

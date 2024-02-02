@@ -134,7 +134,7 @@ describe( 'Activation', () => {
     describe.each( [ { language: 'de' }, { language: 'en' } ] )(
         'when langauge is $language',
         ( { language } ) => {
-            it.skip( 'sends expected language in accept language header', async () => {
+            it( 'sends expected language in accept language header', async () => {
                 i18n.global.locale.value = language as "en" | "en-US" | "de";
                 let acceptLanguage: string | null;
                 server.use(

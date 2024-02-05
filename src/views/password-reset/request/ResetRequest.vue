@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { AppAlert, AppSpinner, UserInput } from '@/components'
+import { AppAlert, AppButton, UserInput } from '@/components'
 import { type ErrorsType } from '@/shared/types/api-error-types'
 import { useI18n } from 'vue-i18n'
 import { passwordReset } from './api'
@@ -64,9 +64,9 @@ const onSubmit = async () => {
         />
         <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>
         <div class="text-center">
-          <button class="btn btn-primary" :disabled="!email || apiProgress" type="submit">
-            <AppSpinner v-if="apiProgress" />{{ $t('passwordReset') }}
-          </button>
+          <AppButton :is-disabled="!email || apiProgress" :api-progress="apiProgress">
+            {{ $t('passwordReset') }}</AppButton
+          >
         </div>
       </section>
     </form>

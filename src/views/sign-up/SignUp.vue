@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AxiosError } from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
-import { AppSpinner, UserInput } from '@/components'
+import { AppAlert, AppButton, UserInput } from '@/components'
 import { type FormStateType, type ErrorsType } from '@/shared/types/api-error-types'
 import { useI18n } from 'vue-i18n'
 import { signUp } from './api'
@@ -95,26 +95,15 @@ const onSubmit = async () => {
           v-model="formState.passwordRepeat"
         />
 
-        <div class="">
-          <div
-            v-if="errorMessage"
-            class="alert alert-danger alert-padding-y-0 h-3 lh-3"
-            role="alert"
-          >
-            <span>{{ errorMessage }}</span>
-          </div>
-        </div>
+        <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>
+
         <div class="text-center">
-          <button class="btn btn-primary" :disabled="isDisabled || apiProgress" type="submit">
-            <AppSpinner v-if="apiProgress" />{{ $t('signUp') }}
-          </button>
+          <AppButton :is-disabled="isDisabled || apiProgress" :api-progress="apiProgress">
+            {{ $t('signUp') }}</AppButton
+          >
         </div>
       </section>
     </form>
-    <div v-else class="">
-      <div class="alert alert-success alert-padding-y-0 h-3 lh-3" role="alert">
-        <span>{{ successMessage }}</span>
-      </div>
-    </div>
+    <AppAlert v-else variant="success">{{ successMessage }}</AppAlert>
   </div>
 </template>

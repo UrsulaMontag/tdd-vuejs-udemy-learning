@@ -14,8 +14,8 @@ const setup = async () => {
     router.push( '/password-reset/set?tk=123' );
     await router.isReady();
     const { result, user } = render( ResetSet );
-    const passwordInput = screen.getByLabelText( 'Password' );
-    const passwordRepeatInput = screen.getByLabelText( 'Password Repeat' );
+    const passwordInput = screen.getByLabelText( 'New password' );
+    const passwordRepeatInput = screen.getByLabelText( 'New password repeat' );
     await user.type( passwordInput, 'Password1' );
     await user.type( passwordRepeatInput, 'Password1' );
     const button = screen.getByRole( 'button', { name: /set new password/i } );
@@ -33,48 +33,48 @@ beforeEach( () => {
 afterAll( () => server.close() );
 
 describe( 'set new password page', () => {
-    it.only( 'has a set new password header', () => {
+    it( 'has a set new password header', () => {
         render( ResetSet );
         const header = screen.getByRole( 'heading', { name: /set new password/i } );
         expect( header ).toBeInTheDocument();
     } );
 
-    it.only( 'has password input', () => {
+    it( 'has password input', () => {
         render( ResetSet );
-        expect( screen.getByLabelText( 'Password' ) ).toBeInTheDocument();
+        expect( screen.getByLabelText( 'New password' ) ).toBeInTheDocument();
     } );
 
-    it.only( 'has password type for password input', () => {
+    it( 'has password type for password input', () => {
         render( ResetSet );
-        expect( screen.getByLabelText( 'Password' ) ).toHaveAttribute( 'type', 'password' );
+        expect( screen.getByLabelText( 'New password' ) ).toHaveAttribute( 'type', 'password' );
     } );
 
-    it.only( 'has password repeat input', () => {
+    it( 'has password repeat input', () => {
         render( ResetSet );
-        expect( screen.getByLabelText( 'Password Repeat' ) ).toBeInTheDocument();
+        expect( screen.getByLabelText( 'New password repeat' ) ).toBeInTheDocument();
     } );
 
-    it.only( 'has password type for password input', () => {
+    it( 'has password type for password input', () => {
         render( ResetSet );
-        expect( screen.getByLabelText( 'Password Repeat' ) ).toHaveAttribute( 'type', 'password' );
+        expect( screen.getByLabelText( 'New password repeat' ) ).toHaveAttribute( 'type', 'password' );
     } );
-    it.only( 'has a set new password button', () => {
+    it( 'has a set new password button', () => {
         render( ResetSet );
         const button = screen.getByRole( 'button', { name: /set new password/i } );
         expect( button ).toBeInTheDocument();
     } );
 
-    it.only( 'disables set new password button initially', () => {
+    it( 'disables set new password button initially', () => {
         render( ResetSet );
         expect( screen.getByRole( 'button', { name: /set new password/i } ) ).toBeDisabled();
     } );
-    it.only( 'does not display spinner', () => {
+    it( 'does not display spinner', () => {
         render( ResetSet );
         expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
     } );
 
     describe( 'when passwords do not match', () => {
-        it.only( 'displays error', async () => {
+        it( 'displays error', async () => {
             const {
                 user,
                 elements: { passwordInput, passwordRepeatInput }
@@ -86,14 +86,14 @@ describe( 'set new password page', () => {
     } );
 
     describe( 'when user sets same value for password inputs', () => {
-        it.only( 'enables set new password button', async () => {
+        it( 'enables set new password button', async () => {
             const {
                 elements: { button }
             } = await setup();
             expect( button ).toBeEnabled();
         } );
         describe( 'when user submits form', () => {
-            it.only( 'sends new password and token to backend', async () => {
+            it( 'sends new password and token to backend', async () => {
                 server.use( http.patch( '/api/v1/users/:resetToken/password', async ( { request, params } ) => {
                     requestBody = await request.json();
                     token = params.resetToken;
@@ -116,7 +116,7 @@ describe( 'set new password page', () => {
             describe.each( [ { language: 'de' as 'de' }, { language: 'en' as 'en' } ] )(
                 'when language is $language',
                 ( { language } ) => {
-                    it.only( 'sends expected language in accept language header', async () => {
+                    it( 'sends expected language in accept language header', async () => {
                         let acceptLanguage: string | null = null;
                         server.use(
                             http.patch( '/api/v1/users/:resetToken/password', async ( { request } ) => {
@@ -137,7 +137,7 @@ describe( 'set new password page', () => {
             );
 
             describe( 'when there is an ongoing api request', () => {
-                it.only( 'does not allow clicking the button', async () => {
+                it( 'does not allow clicking the button', async () => {
                     server.use(
                         http.patch( '/api/v1/users/:resetToken/password', async () => {
                             counter += 1;
@@ -153,11 +153,11 @@ describe( 'set new password page', () => {
                     await user.click( button );
                     await waitFor( () => expect( counter ).toBe( 1 ) );
                 } );
-                it.only( 'displays spinner', async () => {
+                it( 'displays spinner', async () => {
                     server.use(
                         http.patch( '/api/v1/users/:resetToken/password', async () => {
                             await delay( 'infinite' );
-                            return HttpResponse.json( {} );
+                            return HttpResponse.json( { message: 'Password update success' } );
                         } )
                     );
                     const {
@@ -170,7 +170,7 @@ describe( 'set new password page', () => {
             } );
 
             describe( 'when success response is received', () => {
-                it.only( 'navigates to login page', async () => {
+                it( 'navigates to login page', async () => {
                     server.use(
                         http.patch( '/api/v1/users/:resetToken/password', () => {
                             return HttpResponse.json( { message: 'Password update success' } );
@@ -187,7 +187,7 @@ describe( 'set new password page', () => {
                 } );
             } );
             describe( 'when network failure occurs', () => {
-                it.only( 'displays generic message', async () => {
+                it( 'displays generic message', async () => {
                     server.use(
                         http.patch( '/api/v1/users/:resetToken/password', () => {
                             return HttpResponse.error();
@@ -201,7 +201,7 @@ describe( 'set new password page', () => {
                     const text = await screen.findByText( 'Unexpected error occured. Please try again.' );
                     expect( text ).toBeInTheDocument();
                 } );
-                it.only( 'hides spinner', async () => {
+                it( 'hides spinner', async () => {
                     server.use(
                         http.patch( '/api/v1/users/:resetToken/password', () => {
                             return HttpResponse.error();
@@ -216,7 +216,7 @@ describe( 'set new password page', () => {
                 } );
 
                 describe( 'when user submits form again', () => {
-                    it.only( 'hides error message when api Set is in progress', async () => {
+                    it( 'hides error message when api Set is in progress', async () => {
                         let processedFirstSet = false;
                         server.use(
                             http.patch( 'api/v1/users/password-reset', async () => {
@@ -256,7 +256,7 @@ describe( 'set new password page', () => {
                         } )
                     );
                 } );
-                it.only( `displays validation error`, async () => {
+                it( `displays validation error`, async () => {
                     const {
                         user,
                         elements: { button }
@@ -268,7 +268,7 @@ describe( 'set new password page', () => {
                     } );
                 } );
 
-                it.only( 'clears validation error when user changes the password field', async () => {
+                it( 'clears validation error when user changes the password field', async () => {
                     const {
                         user,
                         elements: { button, passwordInput }
@@ -280,7 +280,7 @@ describe( 'set new password page', () => {
                 } );
             } );
             describe( 'when there is no validation error', () => {
-                it.only( 'displays error returned from server', async () => {
+                it( 'displays error returned from server', async () => {
                     server.use(
                         http.patch( '/api/v1/users/:resetToken/password', () => {
                             return HttpResponse.json(

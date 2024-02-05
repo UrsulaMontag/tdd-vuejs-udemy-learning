@@ -7,6 +7,7 @@
   "passwordMismatch": "Passwords do not match",
   "genericError": "Unexpected error occured. Please try again.",
   "passwordReset": "Reset password",
+  "passwordSet": "Set new password",
   "newPassword": "New password",
   "newPasswordRepeat": "New password repeat"
 }

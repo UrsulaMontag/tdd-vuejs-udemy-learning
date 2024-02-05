@@ -2,7 +2,7 @@ import { AxiosError } from 'axios';
 
 export type FormStateType = {
     username?: string;
-    email: string;
+    email?: string;
     password?: string;
     passwordRepeat?: string;
 };

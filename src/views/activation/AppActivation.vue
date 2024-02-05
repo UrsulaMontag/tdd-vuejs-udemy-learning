@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import axios, { AxiosError } from 'axios'
+import { AxiosError } from 'axios'
 import { ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'

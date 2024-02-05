@@ -1,96 +1,125 @@
-import { render, screen, waitFor } from 'test/helper';
-import ResetRequest from './ResetRequest.vue';
+import { render, router, screen, waitFor } from 'test/helper';
+import ResetSet from './ResetSet.vue';
 import { setupServer } from 'msw/node';
 import { HttpResponse, http, type DefaultBodyType, delay } from 'msw';
-import { beforeAll, beforeEach, afterAll } from 'vitest';
 import { i18n } from '@/locales';
 
 let requestBody: DefaultBodyType;
+let token: string | readonly string[];
 let counter = 0;
+
 const server = setupServer();
 
 const setup = async () => {
-    const { result, user } = render( ResetRequest );
-    const emailInput = screen.getByLabelText( 'Email' );
-    await user.type( emailInput, 'user123@mail.com' );
-    const button = screen.getByRole( 'button', { name: /reset password/i } );
+    router.push( '/password-reset/set?tk=123' );
+    await router.isReady();
+    const { result, user } = render( ResetSet );
+    const passwordInput = screen.getByLabelText( 'Password' );
+    const passwordRepeatInput = screen.getByLabelText( 'Password Repeat' );
+    await user.type( passwordInput, 'Password1' );
+    await user.type( passwordRepeatInput, 'Password1' );
+    const button = screen.getByRole( 'button', { name: /set new password/i } );
     return {
         ...result,
         user,
-        elements: { button, emailInput }
+        elements: { button, passwordInput, passwordRepeatInput }
     };
 };
 
 beforeAll( () => server.listen() );
 beforeEach( () => {
-    counter = 0;
     server.resetHandlers();
 } );
 afterAll( () => server.close() );
 
-describe( 'Reset password request', () => {
-    it( 'has a reset password header', () => {
-        render( ResetRequest );
-        const header = screen.getByRole( 'heading', { name: /reset password/i } );
+describe( 'set new password page', () => {
+    it.only( 'has a set new password header', () => {
+        render( ResetSet );
+        const header = screen.getByRole( 'heading', { name: /set new password/i } );
         expect( header ).toBeInTheDocument();
     } );
 
-    it( 'has email input', () => {
-        render( ResetRequest );
-        expect( screen.getByLabelText( 'Email' ) ).toBeInTheDocument();
+    it.only( 'has password input', () => {
+        render( ResetSet );
+        expect( screen.getByLabelText( 'Password' ) ).toBeInTheDocument();
     } );
 
-    it( 'has email type for email input', () => {
-        render( ResetRequest );
-        expect( screen.getByLabelText( 'Email' ) ).toHaveAttribute( 'type', 'email' );
+    it.only( 'has password type for password input', () => {
+        render( ResetSet );
+        expect( screen.getByLabelText( 'Password' ) ).toHaveAttribute( 'type', 'password' );
     } );
-    it( 'has a reset password button', () => {
-        render( ResetRequest );
-        const button = screen.getByRole( 'button', { name: /reset password/i } );
+
+    it.only( 'has password repeat input', () => {
+        render( ResetSet );
+        expect( screen.getByLabelText( 'Password Repeat' ) ).toBeInTheDocument();
+    } );
+
+    it.only( 'has password type for password input', () => {
+        render( ResetSet );
+        expect( screen.getByLabelText( 'Password Repeat' ) ).toHaveAttribute( 'type', 'password' );
+    } );
+    it.only( 'has a set new password button', () => {
+        render( ResetSet );
+        const button = screen.getByRole( 'button', { name: /set new password/i } );
         expect( button ).toBeInTheDocument();
     } );
 
-    it( 'disables reset password button initially', () => {
-        render( ResetRequest );
-        expect( screen.getByRole( 'button', { name: /reset password/i } ) ).toBeDisabled();
+    it.only( 'disables set new password button initially', () => {
+        render( ResetSet );
+        expect( screen.getByRole( 'button', { name: /set new password/i } ) ).toBeDisabled();
     } );
-    it( 'does not display spinner', () => {
-        render( ResetRequest );
+    it.only( 'does not display spinner', () => {
+        render( ResetSet );
         expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
     } );
 
-    describe( 'when user sets email', () => {
-        it( 'enables reset password button', async () => {
+    describe( 'when passwords do not match', () => {
+        it.only( 'displays error', async () => {
+            const {
+                user,
+                elements: { passwordInput, passwordRepeatInput }
+            } = await setup();
+            await user.type( passwordInput, 'Password1' );
+            await user.type( passwordRepeatInput, 'Password2' );
+            expect( screen.getByText( 'Passwords do not match' ) ).toBeInTheDocument();
+        } );
+    } );
+
+    describe( 'when user sets same value for password inputs', () => {
+        it.only( 'enables set new password button', async () => {
             const {
                 elements: { button }
             } = await setup();
             expect( button ).toBeEnabled();
         } );
         describe( 'when user submits form', () => {
-            it( 'sends email to backend', async () => {
-                server.use( http.post( '/api/v1/users/password-reset', async ( { request } ) => {
+            it.only( 'sends new password and token to backend', async () => {
+                server.use( http.patch( '/api/v1/users/:resetToken/password', async ( { request, params } ) => {
                     requestBody = await request.json();
-                    return HttpResponse.json( { message: 'Check your email' } );
+                    token = params.resetToken;
+                    return HttpResponse.json( { message: 'Password update success' } );
                 } ) );
                 const {
                     user,
                     elements: { button }
                 } = await setup();
                 await user.click( button );
-                await waitFor( () =>
+                await waitFor( () => {
+                    expect( token ).toBe( '123' );
                     expect( requestBody ).toEqual( {
-                        email: 'user123@mail.com',
-                    } )
+                        password: 'Password1',
+                    } );
+                }
                 );
             } );
 
             describe.each( [ { language: 'de' as 'de' }, { language: 'en' as 'en' } ] )(
                 'when language is $language',
                 ( { language } ) => {
-                    it( 'sends expected language in accept language header', async () => {
+                    it.only( 'sends expected language in accept language header', async () => {
                         let acceptLanguage: string | null = null;
                         server.use(
-                            http.post( '/api/v1/users/password-reset', async ( { request } ) => {
+                            http.patch( '/api/v1/users/:resetToken/password', async ( { request } ) => {
                                 acceptLanguage = request.headers.get( 'Accept-Language' );
                                 await delay( 'infinite' );
                                 return HttpResponse.json( {} );
@@ -108,12 +137,12 @@ describe( 'Reset password request', () => {
             );
 
             describe( 'when there is an ongoing api request', () => {
-                it( 'does not allow clicking the button', async () => {
+                it.only( 'does not allow clicking the button', async () => {
                     server.use(
-                        http.post( '/api/v1/users/password-reset', async () => {
+                        http.patch( '/api/v1/users/:resetToken/password', async () => {
                             counter += 1;
                             await delay( 'infinite' );
-                            return HttpResponse.json( { message: 'Check your email' } );
+                            return HttpResponse.json( { message: 'Password update success' } );
                         } )
                     );
                     const {
@@ -124,9 +153,9 @@ describe( 'Reset password request', () => {
                     await user.click( button );
                     await waitFor( () => expect( counter ).toBe( 1 ) );
                 } );
-                it( 'displays spinner', async () => {
+                it.only( 'displays spinner', async () => {
                     server.use(
-                        http.post( '/api/v1/users/password-reset', async () => {
+                        http.patch( '/api/v1/users/:resetToken/password', async () => {
                             await delay( 'infinite' );
                             return HttpResponse.json( {} );
                         } )
@@ -139,11 +168,12 @@ describe( 'Reset password request', () => {
                     expect( screen.getByRole( 'status' ) ).toBeInTheDocument();
                 } );
             } );
+
             describe( 'when success response is received', () => {
-                it( 'displays success message received from backend', async () => {
+                it.only( 'navigates to login page', async () => {
                     server.use(
-                        http.post( '/api/v1/users/password-reset', () => {
-                            return HttpResponse.json( { message: 'Check your email' } );
+                        http.patch( '/api/v1/users/:resetToken/password', () => {
+                            return HttpResponse.json( { message: 'Password update success' } );
                         } )
                     );
                     const {
@@ -151,14 +181,15 @@ describe( 'Reset password request', () => {
                         elements: { button }
                     } = await setup();
                     await user.click( button );
-                    const text = await screen.findByText( 'Check your email' );
-                    expect( text ).toBeInTheDocument();
+                    await waitFor( () => {
+                        expect( router.currentRoute.value.name ).toBe( '/login' );
+                    } );
                 } );
             } );
             describe( 'when network failure occurs', () => {
-                it( 'displays generic message', async () => {
+                it.only( 'displays generic message', async () => {
                     server.use(
-                        http.post( 'api/v1/users/password-reset', () => {
+                        http.patch( '/api/v1/users/:resetToken/password', () => {
                             return HttpResponse.error();
                         } )
                     );
@@ -170,9 +201,9 @@ describe( 'Reset password request', () => {
                     const text = await screen.findByText( 'Unexpected error occured. Please try again.' );
                     expect( text ).toBeInTheDocument();
                 } );
-                it( 'hides spinner', async () => {
+                it.only( 'hides spinner', async () => {
                     server.use(
-                        http.post( 'api/v1/users/password-reset', () => {
+                        http.patch( '/api/v1/users/:resetToken/password', () => {
                             return HttpResponse.error();
                         } )
                     );
@@ -185,16 +216,16 @@ describe( 'Reset password request', () => {
                 } );
 
                 describe( 'when user submits form again', () => {
-                    it( 'hides error message when api request is in progress', async () => {
-                        let processedFirstRequest = false;
+                    it.only( 'hides error message when api Set is in progress', async () => {
+                        let processedFirstSet = false;
                         server.use(
-                            http.post( 'api/v1/users/password-reset', async () => {
-                                if ( !processedFirstRequest ) {
-                                    processedFirstRequest = true;
+                            http.patch( 'api/v1/users/password-reset', async () => {
+                                if ( !processedFirstSet ) {
+                                    processedFirstSet = true;
                                     return HttpResponse.error();
                                 }
                                 else {
-                                    return HttpResponse.json( { message: 'Check your email' } );
+                                    return HttpResponse.json( { message: 'Password update success' } );
                                 }
                             } )
                         );
@@ -210,63 +241,53 @@ describe( 'Reset password request', () => {
                 } );
             } );
 
-            describe( 'when email is invalid', () => {
-                it( `displays validation error`, async () => {
+            describe( 'when password is invalid', () => {
+                beforeEach( () => {
                     server.use(
-                        http.post( '/api/v1/users/password-reset', () => {
+                        http.patch( '/api/v1/users/:resetToken/password', () => {
                             return HttpResponse.json(
                                 {
                                     validationErrors: {
-                                        email: 'E-mail not found'
+                                        password: 'Password cannot be null'
                                     }
                                 },
                                 { status: 400 }
                             );
                         } )
                     );
+                } );
+                it.only( `displays validation error`, async () => {
                     const {
                         user,
                         elements: { button }
                     } = await setup();
                     await user.click( button );
-                    const error = await screen.findByText( 'E-mail not found' );
+                    const error = await screen.findByText( 'Password cannot be null' );
                     await waitFor( () => {
                         expect( error ).toBeInTheDocument();
                     } );
                 } );
 
-                it( 'clears validation error when user changes the email field', async () => {
-                    server.use(
-                        http.post( '/api/v1/users/password-reset', () => {
-                            return HttpResponse.json(
-                                {
-                                    validationErrors: {
-                                        email: 'E-mail not found'
-                                    }
-                                },
-                                { status: 400 }
-                            );
-                        } )
-                    );
+                it.only( 'clears validation error when user changes the password field', async () => {
                     const {
                         user,
-                        elements: { button, emailInput }
+                        elements: { button, passwordInput }
                     } = await setup();
                     await user.click( button );
-                    const validationError = await screen.findByText( /E-mail not found/i );
-                    await user.type( emailInput, 'Updated' );
+                    const validationError = await screen.findByText( /Password cannot be null/i );
+                    await user.type( passwordInput, 'Updated' );
                     expect( validationError ).not.toBeInTheDocument();
                 } );
             } );
             describe( 'when there is no validation error', () => {
-                it( 'displays error returned from server', async () => {
+                it.only( 'displays error returned from server', async () => {
                     server.use(
-                        http.post( '/api/v1/users/password-reset', () => {
+                        http.patch( '/api/v1/users/:resetToken/password', () => {
                             return HttpResponse.json(
                                 {
-                                    message: 'Unknown user'
+                                    message: 'Invalid token'
                                 },
-                                { status: 404 }
+                                { status: 400 }
                             );
                         } )
                     );
@@ -275,7 +296,7 @@ describe( 'Reset password request', () => {
                         elements: { button }
                     } = await setup();
                     await user.click( button );
-                    const error = await screen.findByText( 'Unknown user' );
+                    const error = await screen.findByText( 'Invalid token' );
                     expect( error ).toBeInTheDocument();
                 } );
             } );

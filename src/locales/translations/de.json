@@ -7,6 +7,7 @@
   "passwordMismatch": "Passwörter stimmen nicht überein",
   "genericError": "Unerwarteter Fehler, bitte versuchen Sie es erneut.",
   "passwordReset": "Passwort zurücksetzen",
+  "passwordSet": "Neues Passwort setzen",
   "newPassword": "Neues Passwort",
   "newPasswordRepeat": "Neues Passwort wiederholen"
 }

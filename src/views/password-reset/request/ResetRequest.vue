@@ -24,7 +24,6 @@ watch(
 const onSubmit = async () => {
   apiProgress.value = true
   errorMessage.value = undefined
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   try {
     const response = await passwordReset({ email: email.value })
     // receives response message from the backend server
@@ -44,10 +43,15 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <div data-testid="sign-up-page" class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+  <div data-testid="reset-password-request-page" class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
     <!-- v-show is not removing the element from the DOM, it just hides it. that means v-show has better 
     performance when toggling the view of the element often than v-if -->
-    <form @submit.prevent="onSubmit" class="card" data-testid="form-sign-up" v-if="!successMessage">
+    <form
+      @submit.prevent="onSubmit"
+      class="card"
+      data-testid="form-reset-password-request"
+      v-if="!successMessage"
+    >
       <header class="card-header text-center">
         <h1>{{ $t('passwordReset') }}</h1>
       </header>

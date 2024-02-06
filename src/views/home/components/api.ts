@@ -1,3 +1,3 @@
 import http from "@/lib/http";
 
-export const loadUsers = () => http.get( '/api/v1/users' );
+export const loadUsers = ( page = 0 ) => http.get( '/api/v1/users', { params: { page, size: 3 } } );

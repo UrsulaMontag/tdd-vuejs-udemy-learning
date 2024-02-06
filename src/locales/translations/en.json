@@ -9,5 +9,10 @@
   "passwordReset": "Reset password",
   "passwordSet": "Set new password",
   "newPassword": "New password",
-  "newPasswordRepeat": "New password repeat"
+  "newPasswordRepeat": "New password repeat",
+  "userList": {
+    "header": "User list",
+    "next": "Next",
+    "previous": "Previous"
+  }
 }

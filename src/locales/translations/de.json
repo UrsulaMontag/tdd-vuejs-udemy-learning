@@ -9,5 +9,10 @@
   "passwordReset": "Passwort zurücksetzen",
   "passwordSet": "Neues Passwort setzen",
   "newPassword": "Neues Passwort",
-  "newPasswordRepeat": "Neues Passwort wiederholen"
+  "newPasswordRepeat": "Neues Passwort wiederholen",
+  "userList": {
+    "header": "Nutzerliste",
+    "next": "Nächste",
+    "previous": "Vorherige"
+  }
 }

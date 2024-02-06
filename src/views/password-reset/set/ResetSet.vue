@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AxiosError } from 'axios'
 import { computed, ref, watch } from 'vue'
-import { AppButton, UserInput } from '@/components'
+import { AppButton, UserInput, AppAlert } from '@/components'
 import { type ErrorsType } from '@/shared/types/api-error-types'
 import { useI18n } from 'vue-i18n'
 import { setPassword } from './api'

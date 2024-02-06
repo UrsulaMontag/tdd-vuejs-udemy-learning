@@ -2,6 +2,7 @@
 // No need to explicitly define the __mocks__ folder 
 // because vitest will automatically look for it
 vi.mock( '@/views/activation/Appactivation.vue' );
+vi.mock( '@/views/home/components/UserList.vue' );
 
 import { render, router, screen, waitFor } from 'test/helper';
 import App from '@/App.vue';

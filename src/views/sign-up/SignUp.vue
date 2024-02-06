@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AxiosError } from 'axios'
 import { computed, reactive, ref, watch } from 'vue'
-import { AppAlert, AppButton, UserInput } from '@/components'
+import { AppAlert, AppButton, AppCard, UserInput } from '@/components'
 import { type FormStateType, type ErrorsType } from '@/shared/types/api-error-types'
 import { useI18n } from 'vue-i18n'
 import { signUp } from './api'
@@ -65,44 +65,46 @@ const onSubmit = async () => {
   <div data-testid="sign-up-page" class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
     <!-- v-show is not removing the element from the DOM, it just hides it. that means v-show has better 
     performance when toggling the view of the element often than v-if -->
-    <form @submit.prevent="onSubmit" class="card" data-testid="form-sign-up" v-if="!successMessage">
-      <header class="card-header text-center">
-        <h1>{{ $t('signUp') }}</h1>
-      </header>
-      <section class="card-body">
-        <UserInput
-          :label="$t('username')"
-          id="username"
-          :help="helpValue"
-          v-model="formState.username"
-        />
-        <UserInput
-          :label="$t('email')"
-          id="email"
-          :help="'email' in errors ? (errors.email as string) : undefined"
-          v-model="formState.email"
-        />
-        <UserInput
-          :label="$t('password')"
-          id="password"
-          :help="'password' in errors ? (errors.password as string) : undefined"
-          v-model="formState.password"
-        />
-        <UserInput
-          :label="$t('passwordRepeat')"
-          id="passwordRepeat"
-          :help="passwordMissmatchError"
-          v-model="formState.passwordRepeat"
-        />
+    <form @submit.prevent="onSubmit" data-testid="form-sign-up" v-if="!successMessage">
+      <AppCard>
+        <template v-slot:header>
+          <h1>{{ $t('signUp') }}</h1>
+        </template>
+        <template v-slot:body>
+          <UserInput
+            :label="$t('username')"
+            id="username"
+            :help="helpValue"
+            v-model="formState.username"
+          />
+          <UserInput
+            :label="$t('email')"
+            id="email"
+            :help="'email' in errors ? (errors.email as string) : undefined"
+            v-model="formState.email"
+          />
+          <UserInput
+            :label="$t('password')"
+            id="password"
+            :help="'password' in errors ? (errors.password as string) : undefined"
+            v-model="formState.password"
+          />
+          <UserInput
+            :label="$t('passwordRepeat')"
+            id="passwordRepeat"
+            :help="passwordMissmatchError"
+            v-model="formState.passwordRepeat"
+          />
 
-        <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>
+          <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>
 
-        <div class="text-center">
-          <AppButton :is-disabled="isDisabled || apiProgress" :api-progress="apiProgress">
-            {{ $t('signUp') }}</AppButton
-          >
-        </div>
-      </section>
+          <div class="text-center">
+            <AppButton :is-disabled="isDisabled || apiProgress" :api-progress="apiProgress">
+              {{ $t('signUp') }}</AppButton
+            >
+          </div>
+        </template>
+      </AppCard>
     </form>
     <AppAlert v-else variant="success">{{ successMessage }}</AppAlert>
   </div>

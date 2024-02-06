@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { loadUsers } from './api'
-import { AppSpinner } from '@/components'
+import { AppCard, AppSpinner } from '@/components'
 import { type PageData } from './types/pageData'
 import UserItem from './UserItem.vue'
 
@@ -32,14 +32,16 @@ const loadData = async (pageIndex?: number | undefined) => {
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-header text-center">
-      <h1 class="card-title">{{ $t('userList.header') }}</h1>
-    </div>
-    <ul class="list-group list-group-flush">
-      <UserItem v-for="user in pageData.content" :key="user.id" :user="user" />
-    </ul>
-    <div class="card-footer text-center">
+  <AppCard>
+    <template v-slot:header>
+      <h1>{{ $t('userList.header') }}</h1>
+    </template>
+    <template v-slot:default>
+      <ul class="list-group list-group-flush">
+        <UserItem v-for="user in pageData.content" :key="user.id" :user="user" />
+      </ul>
+    </template>
+    <template v-slot:footer>
       <AppSpinner v-if="apiProgress" size="normal" />
       <button
         class="btn btn-outline-secondary btn-sm float-start"
@@ -55,6 +57,6 @@ const loadData = async (pageIndex?: number | undefined) => {
       >
         {{ $t('userList.next') }}
       </button>
-    </div>
-  </div>
+    </template>
+  </AppCard>
 </template>

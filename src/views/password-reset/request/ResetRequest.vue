@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { AppAlert, AppButton, UserInput } from '@/components'
+import { AppAlert, AppButton, AppCard, UserInput } from '@/components'
 import { type ErrorsType } from '@/shared/types/api-error-types'
 import { useI18n } from 'vue-i18n'
 import { passwordReset } from './api'
@@ -46,30 +46,27 @@ const onSubmit = async () => {
   <div data-testid="reset-password-request-page" class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
     <!-- v-show is not removing the element from the DOM, it just hides it. that means v-show has better 
     performance when toggling the view of the element often than v-if -->
-    <form
-      @submit.prevent="onSubmit"
-      class="card"
-      data-testid="form-reset-password-request"
-      v-if="!successMessage"
-    >
-      <header class="card-header text-center">
-        <h1>{{ $t('passwordReset') }}</h1>
-      </header>
-      <section class="card-body">
-        <UserInput
-          :label="$t('email')"
-          id="email"
-          :help="'email' in errors ? (errors.email as string) : undefined"
-          v-model="email"
-        />
-        <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>
-        <div class="text-center">
-          <AppButton :is-disabled="!email || apiProgress" :api-progress="apiProgress">
-            {{ $t('passwordReset') }}</AppButton
-          >
-        </div>
-      </section>
+    <form @submit.prevent="onSubmit" data-testid="form-reset-password-request">
+      <AppCard>
+        <template v-slot:header>
+          <h1>{{ $t('passwordReset') }}</h1>
+        </template>
+        <template v-slot:body>
+          <UserInput
+            :label="$t('email')"
+            id="email"
+            :help="'email' in errors ? (errors.email as string) : undefined"
+            v-model="email"
+          />
+          <AppAlert v-if="successMessage">{{ successMessage }}</AppAlert>
+          <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>
+          <div class="text-center">
+            <AppButton :is-disabled="!email || apiProgress" :api-progress="apiProgress">
+              {{ $t('passwordReset') }}
+            </AppButton>
+          </div>
+        </template>
+      </AppCard>
     </form>
-    <AppAlert v-if="successMessage">{{ successMessage }}</AppAlert>
   </div>
 </template>

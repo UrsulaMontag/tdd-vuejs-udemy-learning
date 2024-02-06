@@ -3,7 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { loadUsers } from './api'
 import { AppSpinner } from '@/components'
 import { type PageData } from './types/pageData'
-import { UserItem } from './UserItem.vue'
+import UserItem from './UserItem.vue'
 
 const pageData = reactive<PageData>({
   content: [],
@@ -37,14 +37,7 @@ const loadData = async (pageIndex?: number | undefined) => {
       <h1 class="card-title">{{ $t('userList.header') }}</h1>
     </div>
     <ul class="list-group list-group-flush">
-      <UserItem
-      <!-- <li
-        class="list-group-item list-group-item-action"
-        v-for="user in pageData.content"
-        :key="user.id"
-      >
-        {{ user.username }}
-      </li> -->
+      <UserItem v-for="user in pageData.content" :key="user.id" :user="user" />
     </ul>
     <div class="card-footer text-center">
       <AppSpinner v-if="apiProgress" size="normal" />

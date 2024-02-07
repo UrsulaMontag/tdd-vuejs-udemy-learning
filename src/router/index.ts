@@ -4,6 +4,7 @@ import AppHome from '@/views/home/AppHome.vue';
 import AppActivation from '@/views/activation/AppActivation.vue';
 import ResetRequest from '@/views/password-reset/request/ResetRequest.vue';
 import ResetSet from '@/views/password-reset/set/ResetSet.vue';
+import UserView from '@/views/user/UserView.vue';
 
 const router = createRouter( {
   history: createWebHistory( import.meta.env.BASE_URL ),
@@ -27,6 +28,10 @@ const router = createRouter( {
     {
       path: '/password-reset/set',
       component: ResetSet
+    },
+    {
+      path: '/user/:id',
+      component: UserView
     }
   ]
 } );

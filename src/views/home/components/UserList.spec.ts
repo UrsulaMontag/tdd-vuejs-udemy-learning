@@ -1,7 +1,7 @@
 import UserList from './UserList.vue';
 import { setupServer } from 'msw/node';
 import { HttpResponse, http } from 'msw';
-import { render, waitFor, screen } from 'test/helper';
+import { render, waitFor, screen, router } from 'test/helper';
 
 let resolveFunc: ( value?: unknown ) => void;
 
@@ -115,6 +115,16 @@ describe( 'User list', () => {
                 await screen.findByText( 'user7' );
                 expect( screen.queryByRole( 'button', { name: 'Next' } ) ).not.toBeInTheDocument();
             } );
+        } );
+    } );
+
+    describe( 'when user clicks username', () => {
+        it( 'navigates to user page', async () => {
+            const { user } = render( UserList );
+            const link = await screen.findByText( 'user1' );
+            await user.click( link );
+            expect( router.currentRoute.value.path ).toBe( '/user/1' );
+
         } );
     } );
 } )

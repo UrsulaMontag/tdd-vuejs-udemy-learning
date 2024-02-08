@@ -20,12 +20,9 @@ watchEffect(async () => {
     successMessage.value = response?.data?.message
     status.value = 'success'
   } catch (error) {
-    console.log('Caught error:', error)
     if (error instanceof AxiosError && error.response?.data.message) {
-      console.log('Caught AxiosError with message:', error.toJSON())
       errorMessage.value = error?.response?.data?.message
     } else {
-      console.log('Caught non-AxiosError or AxiosError without message:', error)
       errorMessage.value = t('genericError')
     }
     status.value = 'fail'

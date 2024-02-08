@@ -13,6 +13,7 @@
   "userList": {
     "header": "User list",
     "next": "Next",
-    "previous": "Previous"
+    "previous": "Previous",
+    "user": "User"
   }
 }

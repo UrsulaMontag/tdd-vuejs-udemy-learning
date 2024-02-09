@@ -15,7 +15,10 @@ vi.mock( './api', () => ( {
   signUp: vi.fn( () => Promise.resolve( { data: {} } ) )
 } ) );
 const mockI18n: Partial<Composer> = {
-  t: ( key: string ) => en[ key as keyof typeof en ],
+  t: ( key: string ) => {
+    const value = en[ key as keyof typeof en ];
+    return typeof value === 'string' ? value : key;
+  },
   locale: computed( {
     get: () => 'ab',
     set: () => { }

@@ -3,7 +3,6 @@ import { HttpResponse, delay, http } from 'msw';
 import UserView from './UserView.vue';
 import { render, router, waitFor, screen } from 'test/helper';
 import { i18n } from '@/locales';
-import { userInfo } from 'os';
 
 let counter = 0;
 let id: string | readonly string[] | undefined;
@@ -83,7 +82,7 @@ describe( 'User page', () => {
             server.use(
                 http.get( `/api/v1/users/:id`, async () => {
                     await promise;
-                    return HttpResponse.json( { message: 'User not found' }, { status: 400 } );
+                    return HttpResponse.json( { message: 'User not found' }, { status: 404 } );
                 } )
             );
             await setup( '/user/1' );
@@ -112,10 +111,10 @@ describe( 'User page', () => {
                 } )
             );
             await setup( '/user/1' );
-            expect( screen.queryByText( /user 1/i ) ).not.toBeInTheDocument();
+            expect( screen.queryByText( /user1/i ) ).not.toBeInTheDocument();
             await resolveFunc();
             await waitFor( () => {
-                expect( screen.queryByText( /user 1/i ) ).toBeInTheDocument();
+                expect( screen.queryByText( /user1/i ) ).toBeInTheDocument();
             } );
         } );
     } );

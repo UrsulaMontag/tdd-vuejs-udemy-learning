@@ -3,9 +3,10 @@
 This project is a practical exploration of Vue 3 and Test-Driven Development (TDD) methodology, inspired by the Udemy course by Basar Buyukkahraman. The course provides a comprehensive introduction to Vue 3, one of the most popular frontend frameworks, by building a web application from scratch and applying TDD principles throughout the process.
 
 ## What I Cover
+
 In this project, I delve into various aspects of Vue 3 and TDD, including:
 
--  Composition API
+- Composition API
 - Client-side routing with a custom implementation and then using the vue-router library
 - Internationalization with vue-i18n
 - Global state management in a component-based application using Pinia

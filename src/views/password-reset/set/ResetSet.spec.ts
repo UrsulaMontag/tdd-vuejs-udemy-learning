@@ -182,7 +182,7 @@ describe( 'set new password page', () => {
                     } = await setup();
                     await user.click( button );
                     await waitFor( () => {
-                        expect( router.currentRoute.value.name ).toBe( '/login' );
+                        expect( router.currentRoute.value.path ).toBe( '/login' );
                     } );
                 } );
             } );

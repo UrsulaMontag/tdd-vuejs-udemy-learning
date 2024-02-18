@@ -1,5 +1,6 @@
 {
   "signUp": "Anmeldung",
+  "login": "Einloggen",
   "username": "Benutzername",
   "email": "Email",
   "password": "Passwort",
@@ -10,6 +11,7 @@
   "passwordSet": "Neues Passwort setzen",
   "newPassword": "Neues Passwort",
   "newPasswordRepeat": "Neues Passwort wiederholen",
+  "forgotPassword": "Passwort vergessen?",
   "userList": {
     "header": "Nutzerliste",
     "next": "Nächste",

@@ -1,6 +1,7 @@
 {
   "signUp": "Anmeldung",
   "login": "Einloggen",
+  "logout": "Ausloggen",
   "username": "Benutzername",
   "email": "Email",
   "password": "Passwort",

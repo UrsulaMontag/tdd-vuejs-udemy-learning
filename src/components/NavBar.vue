@@ -1,7 +1,17 @@
 <script setup lang="ts">
+import http from '@/lib/http'
 import { useAuthStore } from '@/stores/auth'
 
-const { auth } = useAuthStore()
+const { auth, logout: logoutStore } = useAuthStore()
+
+const logout = async () => {
+  logoutStore()
+  try {
+    await http.post('/api/v1/logout')
+  } catch (error) {
+    console.error('Logout failed')
+  }
+}
 </script>
 
 <template>
@@ -23,11 +33,18 @@ const { auth } = useAuthStore()
             }}</router-link>
           </li>
         </template>
-        <li class="nav-item" v-if="auth.id">
-          <router-link :to="`/user/${auth.id}`" class="nav-link" data-testid="link-my-profile"
-            >My Profile</router-link
-          >
-        </li>
+        <template v-if="auth.id">
+          <li class="nav-item">
+            <router-link :to="`/user/${auth.id}`" class="nav-link" data-testid="link-my-profile"
+              >My Profile</router-link
+            >
+          </li>
+          <li class="nav-item">
+            <button @click="logout" class="nav-link" data-testid="link-logout">
+              {{ $t('logout') }}
+            </button>
+          </li>
+        </template>
       </ul>
     </div>
   </nav>

@@ -120,12 +120,44 @@ describe( 'Routing', () => {
       await user.type( screen.getByLabelText( 'Password' ), 'Password' );
       await user.click( screen.getByRole( 'button', { name: 'Login' } ) );
       await screen.findByTestId( 'home-page' );
+      return { user };
     };
 
-    it( 'hides login and signup links', async () => [
+    it( 'hides login and signup links', async () => {
       await setupLoggedIn(),
-      expect( screen.queryByTestId( 'link-login-page' ) ).not.toBeInTheDocument(),
-      expect( screen.queryByTestId( 'link-signup-page' ) ).not.toBeInTheDocument()
-    ] );
+        expect( screen.queryByTestId( 'link-login-page' ) ).not.toBeInTheDocument(),
+        expect( screen.queryByTestId( 'link-signup-page' ) ).not.toBeInTheDocument();
+    } );
+
+    describe( 'when user clicks My Profile link', () => {
+      it( 'displays user page', async () => {
+        const { user } = await setupLoggedIn();
+        const link = ( screen.queryByTestId( 'link-my-profile' ) );
+        if ( link ) {
+          await user.click( link );
+        } else {
+          throw new Error( `No element found with test ID ${ 'link-my-profile' }` );
+        }
+        await screen.findByTestId( 'user-page' );
+        expect( router.currentRoute.value.path ).toBe( '/user/1' );
+      } );
+    } );
+
+    it( 'stores logged in state in local storage', async () => {
+      await setupLoggedIn();
+      const state = JSON.parse( localStorage.getItem( 'auth' ) || '{}' );
+      expect( state.id ).toBe( 1 );
+      expect( state.username ).toBe( 'user 1' );
+    } );
+  } );
+
+  describe( 'when local storage has auth data', () => {
+    it( 'displays logged in layout', async () => {
+      localStorage.setItem( 'auth', JSON.stringify( { id: 1, username: 'user1', email: 'user1@mail.com' } ) );
+      await setup( '/' );
+      expect( screen.queryByTestId( 'link-sign-up-page' ) ).not.toBeInTheDocument();
+      expect( screen.queryByTestId( 'link-login-page' ) ).not.toBeInTheDocument();
+      expect( screen.queryByTestId( 'link-my-profile' ) ).toBeInTheDocument();
+    } );
   } );
 } );

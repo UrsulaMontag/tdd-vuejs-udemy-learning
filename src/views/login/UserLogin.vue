@@ -6,6 +6,7 @@ import { type FormStateType, type ErrorsType } from '@/shared/types/api-error-ty
 import { useI18n } from 'vue-i18n'
 import { login } from './api'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -13,6 +14,7 @@ const formState = reactive<FormStateType>({
   email: '',
   password: ''
 })
+const { setLoggedIn } = useAuthStore()
 
 const apiProgress = ref(false)
 const errorMessage = ref<string | undefined>(undefined)
@@ -31,7 +33,8 @@ const onSubmit = async () => {
   errorMessage.value = undefined
   const { ...data } = formState
   try {
-    await login(data)
+    const response = await login(data)
+    setLoggedIn(response.data)
     router.push('/')
   } catch (error) {
     if (error instanceof AxiosError && error.response?.status === 400) {

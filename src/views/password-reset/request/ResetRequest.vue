@@ -57,6 +57,7 @@ const onSubmit = async () => {
             id="email"
             :help="'email' in errors ? (errors.email as string) : undefined"
             v-model="email"
+            type="email"
           />
           <AppAlert v-if="successMessage">{{ successMessage }}</AppAlert>
           <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>

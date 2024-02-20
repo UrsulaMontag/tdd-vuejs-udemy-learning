@@ -5,17 +5,10 @@ const props = defineProps({
   label: String,
   id: String,
   help: String,
-  modelValue: String
+  modelValue: String,
+  type: String
 })
 defineEmits(['update:modelValue'])
-
-const type = computed(() => {
-  return props.id === 'password' || props.id === 'passwordRepeat'
-    ? 'password'
-    : props.id === 'email'
-      ? 'email'
-      : 'text'
-})
 </script>
 
 <template>

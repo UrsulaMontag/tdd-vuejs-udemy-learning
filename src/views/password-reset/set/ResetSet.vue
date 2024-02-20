@@ -63,12 +63,14 @@ const passwordMatchError = computed(() => {
             id="password"
             :help="'password' in errors ? (errors.password as string) : undefined"
             v-model="password"
+            type="password"
           />
           <UserInput
             :label="$t('newPasswordRepeat')"
             id="passwordRepeat"
             :help="passwordMatchError"
             v-model="passwordRepeat"
+            type="password"
           />
           <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>
           <div class="text-center">

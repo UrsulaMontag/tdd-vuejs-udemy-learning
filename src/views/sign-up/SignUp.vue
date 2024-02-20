@@ -82,18 +82,21 @@ const onSubmit = async () => {
             id="email"
             :help="'email' in errors ? (errors.email as string) : undefined"
             v-model="formState.email"
+            type="email"
           />
           <UserInput
             :label="$t('password')"
             id="password"
             :help="'password' in errors ? (errors.password as string) : undefined"
             v-model="formState.password"
+            type="password"
           />
           <UserInput
             :label="$t('passwordRepeat')"
             id="passwordRepeat"
             :help="passwordMissmatchError"
             v-model="formState.passwordRepeat"
+            type="password"
           />
 
           <AppAlert v-if="errorMessage" variant="danger">{{ errorMessage }}</AppAlert>

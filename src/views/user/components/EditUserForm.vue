@@ -49,6 +49,7 @@ watch(
       v-model="username"
       :help="'username' in errors ? errors.username : undefined"
     />
+    <UserInput id="file" :label="$t('selectImage')" />
     <AppAlert v-if="error" variant="danger">{{ error }}</AppAlert>
     <AppButton type="submit" :api-progress="apiProgress">{{ $t('save') }}</AppButton>
     <div class="d-inline m-1"></div>

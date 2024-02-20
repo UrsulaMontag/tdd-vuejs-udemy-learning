@@ -246,6 +246,17 @@ describe( 'User page', () => {
                 expect( screen.queryByRole( 'button', { name: 'Save' } ) ).toBeInTheDocument();
             } );
 
+            it( 'displays file upload input', async () => {
+                const {
+                    user,
+                    elements: { editButton }
+                } = await setupPageLoaded();
+                await user.click( editButton! );
+                const file = screen.getByLabelText( 'Select Image' );
+                expect( file ).toHaveAttribute( 'type', 'file' );
+            }
+            );
+
             it( 'displays cancel button', async () => {
                 const {
                     user,

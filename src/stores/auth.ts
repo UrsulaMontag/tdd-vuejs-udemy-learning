@@ -6,6 +6,7 @@ interface Auth {
     id: number;
     username?: string;
     email?: string;
+    img?: string;
 }
 
 export const useAuthStore = defineStore( 'auth', () => {

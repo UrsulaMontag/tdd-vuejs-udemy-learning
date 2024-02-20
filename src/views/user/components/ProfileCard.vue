@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import AppCard from '@/components/AppCard.vue'
+import { AppCard, AppButton } from '@/components'
+import DeleteUserButton from './DeleteUserButton.vue'
+import { useAuthStore } from '@/stores/auth'
 defineProps({
   user: {
     type: Object,
@@ -7,6 +9,8 @@ defineProps({
     default: () => ({ user: { username: '', id: -1 } })
   }
 })
+
+const { auth } = useAuthStore()
 </script>
 
 <template>
@@ -16,7 +20,10 @@ defineProps({
     </template>
     <template v-slot:body>
       <div class="text-center">
-        <span>{{ user.username }}</span>
+        <h3>{{ user.username }}</h3>
+        <AppButton v-if="auth.id === user.id">{{ $t('edit') }}</AppButton>
+        <div class="mt-3"></div>
+        <DeleteUserButton :id="user.id" />
       </div>
     </template>
   </AppCard>

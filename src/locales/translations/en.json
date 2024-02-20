@@ -18,5 +18,13 @@
     "next": "Next",
     "previous": "Previous",
     "user": "User"
-  }
+  },
+  "deleteUser": {
+    "button": "Delete",
+    "confirm": "Are you sure?"
+  },
+  "edit": "Edit",
+  "save": "Save",
+  "cancel": "Cancel",
+  "selectImage": "Select Image"
 }

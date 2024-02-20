@@ -4,7 +4,7 @@ vi.mock( '@/views/activation/Appactivation.vue' );
 vi.mock( '@/views/home/components/UserList.vue' );
 vi.mock( '@/views/user/User.vue' );
 
-import { render, router, screen, waitFor } from 'test/helper';
+import { render, router, screen, waitFor, within } from 'test/helper';
 import App from '@/App.vue';
 import { vi } from 'vitest';
 import { setupServer } from 'msw/node';
@@ -133,6 +133,20 @@ describe( 'Routing', () => {
       await setupLoggedIn(),
         expect( screen.queryByTestId( 'link-login-page' ) ).not.toBeInTheDocument(),
         expect( screen.queryByTestId( 'link-signup-page' ) ).not.toBeInTheDocument();
+    } );
+    it( 'displays username link on navbar', async () => {
+      await setupLoggedIn();
+      const profileLink = screen.queryByTestId( 'link-my-profile' );
+      expect( profileLink ).toBeInTheDocument();
+      expect( profileLink ).toHaveTextContent( 'user 1' );
+
+    } );
+    it( 'displays profile img before username on navbar', async () => {
+      await setupLoggedIn();
+      const profileLink = screen.queryByTestId( 'link-my-profile' );
+      const profileImg = within( profileLink! ).queryAllByAltText( 'profile' );
+      expect( profileImg ).toBeInTheDocument();
+
     } );
 
     describe( 'when user clicks My Profile link', () => {

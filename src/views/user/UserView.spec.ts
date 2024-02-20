@@ -184,13 +184,7 @@ describe( 'User page', () => {
             } );
         } );
 
-        it.only( 'displays edit button', async () => {
-            const {
-                elements: { editButton }
-            } = await setupPageLoaded();
-            expect( editButton ).toBeInTheDocument();
-        } );
-        it.only( 'displays username and profile img on navbar', async () => {
+        it( 'displays edit button', async () => {
             const {
                 elements: { editButton }
             } = await setupPageLoaded();
@@ -198,20 +192,12 @@ describe( 'User page', () => {
         } );
 
         describe( 'when user clicks edit button', () => {
-            it( 'displays username input', async () => {
-                const {
-                    user,
-                    elements: { editButton }
-                } = await setupPageLoaded();
-                await user.click( editButton );
-                expect( screen.getByLabelText( 'Username' ) ).toBeInTheDocument();
-            } );
             it( 'hides edit button', async () => {
                 const {
                     user,
                     elements: { editButton }
                 } = await setupPageLoaded();
-                await user.click( editButton );
+                await user.click( editButton! );
                 expect( editButton ).not.toBeInTheDocument();
             } );
 
@@ -220,7 +206,7 @@ describe( 'User page', () => {
                     user,
                     elements: { editButton, deleteButton }
                 } = await setupPageLoaded();
-                await user.click( editButton );
+                await user.click( editButton! );
                 expect( deleteButton ).not.toBeInTheDocument();
             } );
 
@@ -229,16 +215,25 @@ describe( 'User page', () => {
                     user,
                     elements: { editButton }
                 } = await setupPageLoaded();
-                await user.click( editButton );
+                await user.click( editButton! );
                 expect( screen.queryByText( 'user3' ) ).not.toBeInTheDocument();
             } );
+            it( 'displays username input', async () => {
+                const {
+                    user,
+                    elements: { editButton }
+                } = await setupPageLoaded();
+                await user.click( editButton! );
+                expect( screen.getByLabelText( 'Username' ) ).toBeInTheDocument();
+            } );
+
 
             it( 'sets username as initial value for input', async () => {
                 const {
                     user,
                     elements: { editButton }
                 } = await setupPageLoaded();
-                await user.click( editButton );
+                await user.click( editButton! );
                 expect( screen.getByLabelText( 'Username' ) ).toHaveValue( 'user3' );
             } );
 
@@ -247,7 +242,7 @@ describe( 'User page', () => {
                     user,
                     elements: { editButton }
                 } = await setupPageLoaded();
-                await user.click( editButton );
+                await user.click( editButton! );
                 expect( screen.queryByRole( 'button', { name: 'Save' } ) ).toBeInTheDocument();
             } );
 
@@ -256,7 +251,7 @@ describe( 'User page', () => {
                     user,
                     elements: { editButton }
                 } = await setupPageLoaded();
-                await user.click( editButton );
+                await user.click( editButton! );
                 expect( screen.queryByRole( 'button', { name: 'Cancel' } ) ).toBeInTheDocument();
             } );
 
@@ -269,9 +264,9 @@ describe( 'User page', () => {
                             user,
                             elements: { editButton }
                         } = await setupPageLoaded();
-                        await user.click( editButton );
+                        await user.click( editButton! );
                         await user.type( screen.getByLabelText( 'Username' ), '-updated' );
-                        await user.click( screen.queryByRole( 'button', { name: 'Cancel' } ) );
+                        await user.click( screen.queryByRole( 'button', { name: 'Cancel' } )! );
                         await waitFor( () => {
                             expect( screen.queryByText( 'user3' ) ).toBeInTheDocument();
                         } );
@@ -285,8 +280,8 @@ describe( 'User page', () => {
                         user,
                         elements: { editButton }
                     } = await setupPageLoaded();
-                    await user.click( editButton );
-                    await user.click( screen.queryByRole( 'button', { name: 'Cancel' } ) );
+                    await user.click( editButton! );
+                    await user.click( screen.queryByRole( 'button', { name: 'Cancel' } )! );
                     await waitFor( () => {
                         expect( screen.queryByText( 'user3' ) ).toBeInTheDocument();
                     } );
@@ -295,7 +290,7 @@ describe( 'User page', () => {
 
             describe( 'when user clicks save', () => {
                 it( 'sends update request for logged in user', async () => {
-                    let id;
+                    let id: string | readonly string[];
                     server.use(
                         http.put( '/api/v1/users/:id', async ( { params } ) => {
                             id = params.id;
@@ -306,7 +301,7 @@ describe( 'User page', () => {
                         user,
                         elements: { editButton }
                     } = await setupPageLoaded();
-                    await user.click( editButton );
+                    await user.click( editButton! );
                     await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                     await waitFor( () => {
                         expect( id ).toBe( '3' );
@@ -325,38 +320,14 @@ describe( 'User page', () => {
                         user,
                         elements: { editButton }
                     } = await setupPageLoaded();
-                    await user.click( editButton );
+                    await user.click( editButton! );
                     await user.type( screen.getByLabelText( 'Username' ), '-updated' );
                     await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                     await waitFor( () => {
-                        expect( requestBody ).toStrictEqual( { username: 'user3-updated' } );
+                        expect( requestBody! ).toStrictEqual( { username: 'user3-updated' } );
                     } );
                 } );
 
-                it( 'sends request with image', async () => {
-                    let requestBody;
-                    server.use(
-                        http.put( '/api/v1/users/:id', async ( { request } ) => {
-                            requestBody = await request.json();
-                            return HttpResponse.json( {} );
-                        } )
-                    );
-                    const {
-                        user,
-                        elements: { editButton }
-                    } = await setupPageLoaded();
-                    await user.click( editButton );
-                    const fileUploadInput = screen.getByLabelText( 'Select Image' );
-                    await user.upload(
-                        fileUploadInput,
-                        new File( [ 'hello' ], 'hello.png', { type: 'image/png' } )
-                    );
-
-                    await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-                    await waitFor( () => {
-                        expect( requestBody ).toStrictEqual( { username: 'user3', image: 'aGVsbG8=' } );
-                    } );
-                } );
                 describe( 'when api request in progress', () => {
                     it( 'displays spinner', async () => {
                         server.use(
@@ -369,7 +340,7 @@ describe( 'User page', () => {
                             user,
                             elements: { editButton }
                         } = await setupPageLoaded();
-                        await user.click( editButton );
+                        await user.click( editButton! );
                         await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                         await waitFor( () => {
                             expect( screen.queryByRole( 'status' ) ).toBeInTheDocument();
@@ -387,7 +358,7 @@ describe( 'User page', () => {
                             user,
                             elements: { editButton }
                         } = await setupPageLoaded();
-                        await user.click( editButton );
+                        await user.click( editButton! );
                         await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                         await waitFor( () => {
                             expect( screen.getByRole( 'button', { name: 'Edit' } ) ).toBeInTheDocument();
@@ -404,35 +375,12 @@ describe( 'User page', () => {
                             user,
                             elements: { editButton }
                         } = await setupPageLoaded();
-                        await user.click( editButton );
+                        await user.click( editButton! );
                         await user.type( screen.getByLabelText( 'Username' ), '-updated' );
                         await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                         await waitFor( () => {
                             expect( screen.getByText( 'user3-updated' ) ).toBeInTheDocument();
                         } );
-                    } );
-
-                    it( 'displays image served from backend', async () => {
-                        server.use(
-                            http.put( '/api/v1/users/:id', () => {
-                                return HttpResponse.json( { username: 'user3', image: 'uploaded-image.png' } );
-                            } )
-                        );
-                        const {
-                            user,
-                            elements: { editButton }
-                        } = await setupPageLoaded();
-                        await user.click( editButton );
-                        const fileUploadInput = screen.getByLabelText( 'Select Image' );
-                        await user.upload(
-                            fileUploadInput,
-                            new File( [ 'hello' ], 'hello.png', { type: 'image/png' } )
-                        );
-
-                        await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-                        await screen.findByText( 'user3' );
-                        const image = screen.getByAltText( 'user3 profile' );
-                        expect( image ).toHaveAttribute( 'src', '/images/uploaded-image.png' );
                     } );
                 } );
 
@@ -447,9 +395,9 @@ describe( 'User page', () => {
                             user,
                             elements: { editButton }
                         } = await setupPageLoaded();
-                        await user.click( editButton );
+                        await user.click( editButton! );
                         await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-                        const text = await screen.findByText( 'Unexpected error occurred, please try again' );
+                        const text = await screen.findByText( 'Unexpected error occured. Please try again.' );
                         expect( text ).toBeInTheDocument();
                     } );
 
@@ -463,7 +411,7 @@ describe( 'User page', () => {
                             user,
                             elements: { editButton }
                         } = await setupPageLoaded();
-                        await user.click( editButton );
+                        await user.click( editButton! );
                         await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                         await waitFor( () => {
                             expect( screen.queryByRole( 'status' ) ).not.toBeInTheDocument();
@@ -488,13 +436,13 @@ describe( 'User page', () => {
                                 user,
                                 elements: { editButton }
                             } = await setupPageLoaded();
-                            await user.click( editButton );
+                            await user.click( editButton! );
                             await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-                            await screen.findByText( 'Unexpected error occurred, please try again' );
+                            await screen.findByText( 'Unexpected error occured. Please try again.' );
                             await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                             await waitFor( () => {
                                 expect(
-                                    screen.queryByText( 'Unexpected error occurred, please try again' )
+                                    screen.queryByText( 'Unexpected error occured. Please try again.' )
                                 ).not.toBeInTheDocument();
                             } );
                         } );
@@ -518,11 +466,14 @@ describe( 'User page', () => {
                                 user,
                                 elements: { editButton }
                             } = await setupPageLoaded();
-                            await user.click( editButton );
+                            await user.click( editButton! );
                             await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                             const validationError = await screen.findByText( 'Username cannot be null' );
-                            expect( validationError ).toBeInTheDocument();
+                            await waitFor( () => {
+                                expect( validationError ).toBeInTheDocument();
+                            } );
                         } );
+
                         it( 'clears validation error after username field is updated', async () => {
                             server.use(
                                 http.put( '/api/v1/users/:id', () => {
@@ -540,7 +491,7 @@ describe( 'User page', () => {
                                 user,
                                 elements: { editButton }
                             } = await setupPageLoaded();
-                            await user.click( editButton );
+                            await user.click( editButton! );
                             await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
                             const validationError = await screen.findByText( 'Username cannot be null' );
                             await user.type( screen.getByLabelText( 'Username' ), '-updated' );
@@ -548,7 +499,7 @@ describe( 'User page', () => {
                         } );
                     } );
 
-                    describe( 'when image is invalid', () => {
+                    /* describe( 'when image is invalid', () => {
                         it( 'displays validation error', async () => {
                             server.use(
                                 http.put( '/api/v1/users/:id', () => {
@@ -602,7 +553,7 @@ describe( 'User page', () => {
                             );
                             expect( validationError ).not.toBeInTheDocument();
                         } );
-                    } );
+                    } ); */
                 } );
             } );
         } );

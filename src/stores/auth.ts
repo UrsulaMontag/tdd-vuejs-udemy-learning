@@ -13,6 +13,9 @@ export const useAuthStore = defineStore( 'auth', () => {
 
     let initialState = {
         id: 0,
+        img: '',
+        username: '',
+        email: ''
     };
     const storedState = localStorage.getItem( 'auth' );
     if ( storedState !== null ) {
@@ -37,9 +40,13 @@ export const useAuthStore = defineStore( 'auth', () => {
         delete auth.email;
     };
 
+    const update = ( data: Auth ) => {
+        auth.username = data.username;
+    };
+
     watch( auth, () => {
         localStorage.setItem( 'auth', JSON.stringify( auth ) );
     } );
 
-    return { auth, setLoggedIn, logout };
+    return { auth, setLoggedIn, logout, update };
 } );

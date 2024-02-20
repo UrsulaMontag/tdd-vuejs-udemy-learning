@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { AppCard, AppButton } from '@/components'
+import { AppCard, AppButton, ProfileImage } from '@/components'
 import DeleteUserButton from './DeleteUserButton.vue'
 import { useAuthStore } from '@/stores/auth'
-defineProps({
+import { computed, ref } from 'vue'
+import EditUserForm from './EditUserForm.vue'
+const props = defineProps({
   user: {
     type: Object,
     required: true,
@@ -10,20 +12,42 @@ defineProps({
   }
 })
 
+const editMode = ref(false)
+const tempImage = ref()
 const { auth } = useAuthStore()
+const username = computed(() => (auth.id === props.user.id ? auth.username : props.user.username))
+const image = computed(() => (auth.id === props.user.id ? auth.img : props.user.image))
+
+const toggleEditMode = () => {
+  editMode.value = !editMode.value
+}
+
+const onEditComplete = () => {
+  editMode.value = false
+}
 </script>
 
 <template>
   <AppCard>
     <template v-slot:header>
-      <img src="@/assets/profile.png" alt="profile" width="90" class="rounded-circle shadow-sm" />
+      <ProfileImage
+        class="rounded-circle shadow-sm"
+        width="200"
+        height="200"
+        :tempImage="tempImage"
+        :image="image"
+        :alt="user.username + ' profile'"
+      />
     </template>
     <template v-slot:body>
       <div class="text-center">
-        <h3>{{ user.username }}</h3>
-        <AppButton v-if="auth.id === user.id">{{ $t('edit') }}</AppButton>
-        <div class="mt-3"></div>
-        <DeleteUserButton :id="user.id" />
+        <template v-if="!editMode">
+          <h3>{{ username }}</h3>
+          <AppButton v-if="auth.id === user.id" @click="toggleEditMode">{{ $t('edit') }}</AppButton>
+          <div class="mt-3"></div>
+          <DeleteUserButton :id="user.id" />
+        </template>
+        <EditUserForm v-else @cancel="onEditComplete" @save="onEditComplete" />
       </div>
     </template>
   </AppCard>

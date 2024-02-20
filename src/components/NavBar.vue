@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import http from '@/lib/http'
 import { useAuthStore } from '@/stores/auth'
+import { ProfileImage } from '@/components'
 
 const { auth, logout: logoutStore } = useAuthStore()
 
@@ -35,8 +36,15 @@ const logout = async () => {
         </template>
         <template v-if="auth.id">
           <li class="nav-item">
-            <router-link :to="`/user/${auth.id}`" class="nav-link" data-testid="link-my-profile"
-              >My Profile</router-link
+            <router-link :to="`/user/${auth.id}`" class="nav-link" data-testid="link-my-profile">
+              <ProfileImage
+                :image="auth.img"
+                class="rounded-circle shadow-sm"
+                width="30"
+                height="30"
+                :alt="auth.username + ' profile'"
+              />
+              {{ auth.username }}</router-link
             >
           </li>
           <li class="nav-item">

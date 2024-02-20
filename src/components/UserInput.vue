@@ -27,6 +27,7 @@ const type = computed(() => {
       :type="type"
       :id="id"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      :value="modelValue"
     />
     <span data-testid="input-error-message" class="invalid-feedback" v-if="help">{{ help }}</span>
   </div>

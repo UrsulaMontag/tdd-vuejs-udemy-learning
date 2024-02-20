@@ -144,7 +144,7 @@ describe( 'Routing', () => {
     it( 'displays profile img before username on navbar', async () => {
       await setupLoggedIn();
       const profileLink = screen.queryByTestId( 'link-my-profile' );
-      const profileImg = within( profileLink! ).queryAllByAltText( 'profile' );
+      const profileImg = await within( profileLink! ).findByAltText( 'user 1 profile' );
       expect( profileImg ).toBeInTheDocument();
 
     } );

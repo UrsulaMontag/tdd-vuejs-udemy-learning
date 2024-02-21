@@ -3,8 +3,8 @@ import LanguageSelector from '../LanguageSelector.vue';
 
 describe( 'Language selector', () => {
   describe.each( [
-    { language: 'en', text: 'Sign Up' },
-    { language: 'de', text: 'Anmeldung' }
+    { language: 'de', text: 'Anmeldung' },
+    { language: 'en', text: 'Sign Up' }
   ] )( 'when user select $language', ( { language, text } ) => {
     it( 'displays expected text', async () => {
       const TempComponent = {
@@ -16,10 +16,10 @@ describe( 'Language selector', () => {
             <LanguageSelector />
             `
       };
+
       const { user } = render( TempComponent );
       await user.click( screen.getByTestId( `language-${ language }-selector` ) );
-      const textElement = await screen.findByText( new RegExp( text, 'i' ) );
-      expect( textElement ).toBeInTheDocument();
+      expect( screen.getByText( text ) ).toBeInTheDocument();
     } );
 
     it( 'stores selected language in local storage', async () => {

@@ -51,7 +51,7 @@ const onSubmit = async () => {
     successMessage.value = response?.data?.message
   } catch (error) {
     if (error instanceof AxiosError && error.response?.status === 400) {
-      errors.value = error?.response?.data?.validationErrors
+      errors.value = error.response.data.validationErrors
     } else {
       errorMessage.value = t('genericError')
     }

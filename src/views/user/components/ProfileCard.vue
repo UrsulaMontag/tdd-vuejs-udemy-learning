@@ -21,9 +21,15 @@ const image = computed(() => (auth.id === props.user.id ? auth.img : props.user.
 const toggleEditMode = () => {
   editMode.value = !editMode.value
 }
-
 const onEditComplete = () => {
   editMode.value = false
+}
+const onNewImage = (data: string) => {
+  tempImage.value = data
+}
+const onCancel = () => {
+  editMode.value = false
+  tempImage.value = undefined
 }
 </script>
 
@@ -34,8 +40,7 @@ const onEditComplete = () => {
         class="rounded-circle shadow-sm"
         width="200"
         height="200"
-        :tempImage="tempImage"
-        :image="image"
+        :src="tempImage || '/profile.png'"
         :alt="user.username + ' profile'"
       />
     </template>
@@ -47,7 +52,7 @@ const onEditComplete = () => {
           <div class="mt-3"></div>
           <DeleteUserButton :id="user.id" />
         </template>
-        <EditUserForm v-else @cancel="onEditComplete" @save="onEditComplete" />
+        <EditUserForm v-else @cancel="onCancel" @save="onEditComplete" @newImg="onNewImage" />
       </div>
     </template>
   </AppCard>

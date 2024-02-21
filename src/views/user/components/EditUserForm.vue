@@ -10,7 +10,7 @@ import { updateUser } from './api'
 const { t } = useI18n()
 const { auth, update } = useAuthStore()
 
-const emit = defineEmits(['cancel', 'save'])
+const emit = defineEmits(['cancel', 'save', 'newImg'])
 const username = ref<string | undefined>(auth.username)
 const apiProgress = ref<boolean>(false)
 const error = ref<string | undefined>(undefined)
@@ -33,6 +33,17 @@ const onSubmit = async () => {
   }
 }
 
+const onImageChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  const fileReader = new FileReader()
+  fileReader.onloadend = () => {
+    const data = fileReader.result
+    emit('newImg', data)
+  }
+  fileReader.readAsDataURL(file as Blob)
+}
+
 watch(
   () => username.value,
   () => {
@@ -49,7 +60,7 @@ watch(
       v-model="username"
       :help="'username' in errors ? errors.username : undefined"
     />
-    <UserInput id="file" :label="$t('selectImage')" />
+    <UserInput id="file" :label="$t('selectImage')" type="file" @change="onImageChange" />
     <AppAlert v-if="error" variant="danger">{{ error }}</AppAlert>
     <AppButton type="submit" :api-progress="apiProgress">{{ $t('save') }}</AppButton>
     <div class="d-inline m-1"></div>

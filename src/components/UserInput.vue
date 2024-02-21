@@ -8,7 +8,7 @@ const props = defineProps({
   modelValue: String,
   type: String
 })
-defineEmits(['update:modelValue'])
+defineEmits(['update:modelValue', 'change'])
 </script>
 
 <template>
@@ -21,6 +21,7 @@ defineEmits(['update:modelValue'])
       :id="id"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
       :value="modelValue"
+      @change="$emit('change', $event)"
     />
     <span data-testid="input-error-message" class="invalid-feedback" v-if="help">{{ help }}</span>
   </div>

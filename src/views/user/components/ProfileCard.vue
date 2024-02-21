@@ -23,13 +23,10 @@ const toggleEditMode = () => {
 }
 const onEditComplete = () => {
   editMode.value = false
+  tempImage.value = undefined
 }
 const onNewImage = (data: string) => {
   tempImage.value = data
-}
-const onCancel = () => {
-  editMode.value = false
-  tempImage.value = undefined
 }
 </script>
 
@@ -40,7 +37,8 @@ const onCancel = () => {
         class="rounded-circle shadow-sm"
         width="200"
         height="200"
-        :src="tempImage || '/profile.png'"
+        :image="image"
+        :tempImage="tempImage"
         :alt="user.username + ' profile'"
       />
     </template>
@@ -52,7 +50,7 @@ const onCancel = () => {
           <div class="mt-3"></div>
           <DeleteUserButton :id="user.id" />
         </template>
-        <EditUserForm v-else @cancel="onCancel" @save="onEditComplete" @newImg="onNewImage" />
+        <EditUserForm v-else @cancel="onEditComplete" @save="onEditComplete" @newImg="onNewImage" />
       </div>
     </template>
   </AppCard>

@@ -42,6 +42,7 @@ export const useAuthStore = defineStore( 'auth', () => {
 
     const update = ( data: Auth ) => {
         auth.username = data.username;
+        auth.img = data.img;
     };
 
     watch( auth, () => {

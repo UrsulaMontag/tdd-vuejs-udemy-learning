@@ -366,6 +366,29 @@ describe( 'User page', () => {
                         expect( requestBody! ).toStrictEqual( { username: 'user3-updated' } );
                     } );
                 } );
+                it( 'sends request with new image', async () => {
+                    let requestBody;
+                    server.use(
+                        http.put( '/api/v1/users/:id', async ( { request } ) => {
+                            requestBody = await request.json();
+                            return HttpResponse.json( {} );
+                        } )
+                    );
+                    const {
+                        user,
+                        elements: { editButton }
+                    } = await setupPageLoaded();
+                    await user.click( editButton! );
+                    const fileUploadInput = screen.getByLabelText( 'Select Image' );
+                    await user.upload(
+                        fileUploadInput,
+                        new File( [ 'hello' ], 'hello.png', { type: 'image/png' } )
+                    );
+                    await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+                    await waitFor( () => {
+                        expect( requestBody! ).toStrictEqual( { username: 'user3', image: 'aGVsbG8=' } );
+                    } );
+                } );
 
                 describe( 'when api request in progress', () => {
                     it( 'displays spinner', async () => {
@@ -420,6 +443,28 @@ describe( 'User page', () => {
                         await waitFor( () => {
                             expect( screen.getByText( 'user3-updated' ) ).toBeInTheDocument();
                         } );
+                    } );
+
+                    it( 'displays img served from backend', async () => {
+                        server.use(
+                            http.put( '/api/v1/users/:id', async ( { request } ) => {
+                                return HttpResponse.json( { username: 'user3', image: 'uploaded-image.png' } );
+                            } )
+                        );
+                        const {
+                            user,
+                            elements: { editButton }
+                        } = await setupPageLoaded();
+                        await user.click( editButton! );
+                        const fileUploadInput = screen.getByLabelText( 'Select Image' );
+                        await user.upload(
+                            fileUploadInput,
+                            new File( [ 'hello' ], 'hello.png', { type: 'image/png' } )
+                        );
+                        await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+                        screen.findByText( 'user3' );
+                        const image = screen.getByAltText( 'user3 profile' );
+                        expect( image ).toHaveAttribute( 'src', '/images/uploaded-image.png' );
                     } );
                 } );
 
@@ -538,61 +583,63 @@ describe( 'User page', () => {
                         } );
                     } );
 
-                    /* describe( 'when image is invalid', () => {
-                                  it( 'displays validation error', async () => {
-                                      server.use(
-                                          http.put( '/api/v1/users/:id', () => {
-                                              return HttpResponse.json(
-                                                  {
-                                                      validationErrors: {
-                                                          image: 'Only png or jpeg files are allowed'
-                                                      }
-                                                  },
-                                                  { status: 400 }
-                                              );
-                                          } )
-                                      );
-                                      const {
-                                          user,
-                                          elements: { editButton }
-                                      } = await setupPageLoaded();
-                                      await user.click( editButton );
-                                      await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-                                      const validationError = await screen.findByText(
-                                          'Only png or jpeg files are allowed'
-                                      );
-                                      expect( validationError ).toBeInTheDocument();
-                                  } );
-                                  it( 'clears validation error after user selecst new image', async () => {
-                                      server.use(
-                                          http.put( '/api/v1/users/:id', () => {
-                                              return HttpResponse.json(
-                                                  {
-                                                      validationErrors: {
-                                                          image: 'Only png or jpeg files are allowed'
-                                                      }
-                                                  },
-                                                  { status: 400 }
-                                              );
-                                          } )
-                                      );
-                                      const {
-                                          user,
-                                          elements: { editButton }
-                                      } = await setupPageLoaded();
-                                      await user.click( editButton );
-                                      await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
-                                      const validationError = await screen.findByText(
-                                          'Only png or jpeg files are allowed'
-                                      );
-                                      const fileUploadInput = screen.getByLabelText( 'Select Image' );
-                                      await user.upload(
-                                          fileUploadInput,
-                                          new File( [ 'hello' ], 'hello.png', { type: 'image/png' } )
-                                      );
-                                      expect( validationError ).not.toBeInTheDocument();
-                                  } );
-                              } ); */
+                    describe( 'when image is invalid', () => {
+                        it( 'displays validation error', async () => {
+                            server.use(
+                                http.put( '/api/v1/users/:id', () => {
+                                    return HttpResponse.json(
+                                        {
+                                            validationErrors: {
+                                                img: 'Only png or jpeg files are allowed'
+                                            }
+                                        },
+                                        { status: 400 }
+                                    );
+                                } )
+                            );
+                            const {
+                                user,
+                                elements: { editButton }
+                            } = await setupPageLoaded();
+                            await user.click( editButton! );
+                            await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+                            const validationError = await screen.findByText(
+                                'Only png or jpeg files are allowed'
+                            );
+                            await waitFor( () => {
+                                expect( validationError ).toBeInTheDocument();
+                            } );
+                        } );
+                        it( 'clears validation error after user selecst new image', async () => {
+                            server.use(
+                                http.put( '/api/v1/users/:id', () => {
+                                    return HttpResponse.json(
+                                        {
+                                            validationErrors: {
+                                                img: 'Only png or jpeg files are allowed'
+                                            }
+                                        },
+                                        { status: 400 }
+                                    );
+                                } )
+                            );
+                            const {
+                                user,
+                                elements: { editButton }
+                            } = await setupPageLoaded();
+                            await user.click( editButton! );
+                            await user.click( screen.getByRole( 'button', { name: 'Save' } ) );
+                            const validationError = await screen.findByText(
+                                'Only png or jpeg files are allowed'
+                            );
+                            const fileUploadInput = screen.getByLabelText( 'Select Image' );
+                            await user.upload(
+                                fileUploadInput,
+                                new File( [ 'hello' ], 'hello.png', { type: 'image/png' } )
+                            );
+                            expect( validationError ).not.toBeInTheDocument();
+                        } );
+                    } );
                 } );
             } );
         } );

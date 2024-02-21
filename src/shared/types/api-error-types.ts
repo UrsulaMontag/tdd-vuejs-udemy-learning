@@ -11,6 +11,7 @@ type ValidationErrorsType = {
     email?: string;
     password?: string;
     passwordRepeat?: string;
+    img?: string;
 };
 export type ResponseDataType = {
     message: string;

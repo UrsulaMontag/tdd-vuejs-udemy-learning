@@ -15,13 +15,14 @@ const username = ref<string | undefined>(auth.username)
 const apiProgress = ref<boolean>(false)
 const error = ref<string | undefined>(undefined)
 const errors = ref<ErrorsType>({})
+const image = ref<string | undefined>(auth.img)
 
 const onSubmit = async () => {
   apiProgress.value = true
   error.value = undefined
   try {
-    await updateUser(auth.id, { username: username.value })
-    update({ id: auth.id, username: username.value })
+    const result = await updateUser(auth.id, { username: username.value, image: image.value })
+    update({ id: auth.id, username: username.value, img: result.data.image })
     emit('save')
   } catch (apiError) {
     apiProgress.value = false
@@ -34,11 +35,15 @@ const onSubmit = async () => {
 }
 
 const onImageChange = (event: Event) => {
+  'img' in errors.value && delete errors.value.img
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   const fileReader = new FileReader()
   fileReader.onloadend = () => {
     const data = fileReader.result
+    if (typeof data === 'string') {
+      image.value = data.split(',')[1]
+    }
     emit('newImg', data)
   }
   fileReader.readAsDataURL(file as Blob)
@@ -60,7 +65,13 @@ watch(
       v-model="username"
       :help="'username' in errors ? errors.username : undefined"
     />
-    <UserInput id="file" :label="$t('selectImage')" type="file" @change="onImageChange" />
+    <UserInput
+      id="file"
+      :label="$t('selectImage')"
+      type="file"
+      @change="onImageChange"
+      :help="'img' in errors ? errors.img : undefined"
+    />
     <AppAlert v-if="error" variant="danger">{{ error }}</AppAlert>
     <AppButton type="submit" :api-progress="apiProgress">{{ $t('save') }}</AppButton>
     <div class="d-inline m-1"></div>
